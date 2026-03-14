@@ -1,0 +1,1 @@
+# Hint box UI component
