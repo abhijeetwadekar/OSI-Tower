@@ -6,37 +6,39 @@ def run_physical_layer(screen, inventory):
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
 
+    # ---------- CLICK AREAS ----------
+
+    switch_rect = pygame.Rect(120,355,135,135)
+    wire_rect = pygame.Rect(260,340,185,185)
+    hatch_rect = pygame.Rect(390,465,420,150)
+
+    restart_rect = pygame.Rect(20,20,40,40)
+
     # ---------- LOAD IMAGES ----------
 
-    terrace_closed = pygame.image.load("assets/terrace.png")
-    terrace_closed = pygame.transform.scale(terrace_closed, (WIDTH, HEIGHT))
+    terrace = pygame.image.load("assets/terrace.png")
+    terrace = pygame.transform.scale(terrace,(WIDTH,HEIGHT))
 
-    terrace_open = pygame.image.load("assets/hole.png")
-    terrace_open = pygame.transform.scale(terrace_open, (WIDTH, HEIGHT))
+    hole = pygame.image.load("assets/hole.png")
+    hole = pygame.transform.scale(hole,(hatch_rect.width,hatch_rect.height))
 
-    cable_img = pygame.image.load("assets/wire.png")
-    cable_img = pygame.transform.scale(cable_img, (70,70))
+    wired_hole = pygame.image.load("assets/wiredhole.png")
+    wired_hole = pygame.transform.scale(wired_hole,(hatch_rect.width,hatch_rect.height))
 
-    # ---------- COLORS ----------
+    hookless = pygame.image.load("assets/hookless.png")
+    hookless = pygame.transform.scale(hookless,(wire_rect.width,wire_rect.height))
 
-    WHITE = (255,255,255)
-    BOX = (40,40,40)
-    HOVER = (255,255,0)
+    switch_img = pygame.image.load("assets/switch.png")
+    switch_img = pygame.transform.scale(switch_img,(switch_rect.width,switch_rect.height))
 
-    font = pygame.font.SysFont("Times New Roman", 28)
+    # ---------- GAME RESET FUNCTION ----------
 
-    # ---------- GAME STATE ----------
+    def reset_room():
+        return False, False, False, False, "Maybe that device controls something."
 
-    has_cable = False
-    hatch_open = False
+    switch_on, door_open, wire_collected, wire_attached, hint = reset_room()
 
-    hint_text = "Find a cable to go down."
-
-    # ---------- INTERACTION AREAS ----------
-
-    cable_rect = pygame.Rect(350,520,160,120)
-    toolbox_rect = pygame.Rect(100,500,160,120)
-    hatch_rect = pygame.Rect(520,380,240,180)
+    font = pygame.font.SysFont("Times New Roman",26)
 
     running = True
 
@@ -44,42 +46,55 @@ def run_physical_layer(screen, inventory):
 
         mouse = pygame.mouse.get_pos()
 
-        # ---------- BACKGROUND ----------
+        # ---------- DRAW BACKGROUND ----------
 
-        if hatch_open:
-            screen.blit(terrace_open,(0,0))
-        else:
-            screen.blit(terrace_closed,(0,0))
+        screen.blit(terrace,(0,0))
 
-        # ---------- HINT BOX ----------
+        # ---------- DRAW SWITCH ----------
 
-        hint_box = pygame.Rect(WIDTH//2-300,20,600,60)
+        if switch_on:
+            screen.blit(switch_img, switch_rect.topleft)
 
-        pygame.draw.rect(screen, BOX, hint_box)
-        pygame.draw.rect(screen, WHITE, hint_box, 2)
+        # ---------- DRAW HATCH ----------
 
-        text = font.render(hint_text, True, WHITE)
-        screen.blit(text, text.get_rect(center=hint_box.center))
+        if door_open and not wire_attached:
+            screen.blit(hole, hatch_rect.topleft)
+
+        if wire_attached:
+            screen.blit(wired_hole, hatch_rect.topleft)
+
+        # ---------- DRAW HOOKLESS AREA ----------
+
+        if wire_collected:
+            screen.blit(hookless, wire_rect.topleft)
 
         # ---------- INVENTORY ----------
 
         inventory.draw(screen)
 
-        # ---------- DRAW CABLE IF NOT COLLECTED ----------
+        # ---------- RESTART BUTTON ----------
 
-        if not has_cable:
-            screen.blit(cable_img, (360,540))
+        pygame.draw.rect(screen,(200,50,50),restart_rect)
+        pygame.draw.rect(screen,(255,255,255),restart_rect,2)
 
-        # ---------- HOVER EFFECTS ----------
+        restart_text = font.render("R",True,(255,255,255))
+        screen.blit(restart_text,(restart_rect.x+10,restart_rect.y+5))
 
-        if not has_cable and cable_rect.collidepoint(mouse):
-            pygame.draw.rect(screen, HOVER, cable_rect, 3)
+        # ---------- DEBUG BORDERS ----------
 
-        if toolbox_rect.collidepoint(mouse):
-            pygame.draw.rect(screen, (0,255,255), toolbox_rect, 3)
+        # pygame.draw.rect(screen,(255,0,255),switch_rect,3)
+        # pygame.draw.rect(screen,(255,255,0),wire_rect,3)
+        # pygame.draw.rect(screen,(255,100,100),hatch_rect,3)
 
-        if hatch_rect.collidepoint(mouse):
-            pygame.draw.rect(screen, (255,100,100), hatch_rect, 3)
+        # ---------- HINT BOX ----------
+
+        hint_box = pygame.Rect(WIDTH//2-300,20,600,60)
+
+        pygame.draw.rect(screen,(40,40,40),hint_box)
+        pygame.draw.rect(screen,(255,255,255),hint_box,2)
+
+        text = font.render(hint,True,(255,255,255))
+        screen.blit(text,text.get_rect(center=hint_box.center))
 
         pygame.display.update()
         clock.tick(60)
@@ -94,28 +109,49 @@ def run_physical_layer(screen, inventory):
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                # PICK CABLE
-                if cable_rect.collidepoint(event.pos) and not has_cable:
+                inventory.handle_click(event.pos,screen)
 
-                    has_cable = True
+                # RESTART
+                if restart_rect.collidepoint(event.pos):
+
+                    switch_on, door_open, wire_collected, wire_attached, hint = reset_room()
+                    inventory.items.clear()
+                    inventory.selected_item = None
+                    continue
+
+                # SWITCH
+                if switch_rect.collidepoint(event.pos) and not switch_on:
+
+                    switch_on = True
+                    door_open = True
+                    hint = "The hatch opens. But the ladder is broken."
+
+                # PICK WIRE
+                elif wire_rect.collidepoint(event.pos) and not wire_collected:
+
+                    wire_collected = True
                     inventory.add_item("cable")
+                    hint = "You picked up a cable."
 
-                    hint_text = "You picked up a network cable."
-
-                # TOOLBOX HINT
-                elif toolbox_rect.collidepoint(event.pos):
-
-                    hint_text = "Hint: Signals require a physical medium."
-
-                # HATCH INTERACTION
+                # HATCH CLICK
                 elif hatch_rect.collidepoint(event.pos):
 
-                    if has_cable and not hatch_open:
+                    if not door_open:
+                        hint = "The hatch won't open."
 
-                        hatch_open = True
-                        hint_text = "You attach the cable. The hatch opens."
+                    elif door_open and not wire_attached:
 
-                    elif hatch_open:
+                        if inventory.selected_item == "cable":
 
-                        hint_text = "You climb down to the next layer."
+                            wire_attached = True
+                            inventory.remove_item("cable")
+                            hint = "You tie the cable and prepare to go down."
+
+                        else:
+                            hint = "The ladder is broken. Need something to climb."
+
+                    elif wire_attached:
+
+                        hint = "Climbing down to the next floor..."
+                        pygame.time.delay(1000)
                         running = False
