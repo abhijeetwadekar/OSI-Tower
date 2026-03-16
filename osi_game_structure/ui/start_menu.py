@@ -4,62 +4,113 @@ import sys
 def run_start_menu(screen):
 
     WIDTH, HEIGHT = screen.get_size()
+    clock = pygame.time.Clock()
 
-    # Load background
-    bg = pygame.image.load("assets/tower.png")
-    bg = pygame.transform.scale(bg,(WIDTH,HEIGHT))
+    menu_bg = pygame.image.load("assets/tower.png")
+    menu_bg = pygame.transform.scale(menu_bg,(WIDTH,HEIGHT))
 
-    # Colors
     WHITE = (255,255,255)
     GOLD = (255,215,0)
     BOX = (40,40,40)
-    HOVER = (80,80,80)
 
-    # Fonts
     title_font = pygame.font.SysFont("Times New Roman",72,bold=True)
     button_font = pygame.font.SysFont("Times New Roman",40,bold=True)
+    text_font = pygame.font.SysFont("Times New Roman",28)
 
-    # Buttons
     start_button = pygame.Rect(WIDTH//2-110,420,220,70)
     guide_button = pygame.Rect(WIDTH//2-110,510,220,70)
+    back_button = pygame.Rect(40,40,120,50)
 
-    clock = pygame.time.Clock()
+    zoom_scale = 1.0
+    zooming = False
+    show_guide = False
 
-    while True:
+    running = True
+
+    while running:
 
         mouse = pygame.mouse.get_pos()
 
-        screen.blit(bg,(0,0))
+        # ---------------- MENU ----------------
+        if not zooming and not show_guide:
 
-        # Title
-        title = title_font.render("OSI TOWER",True,GOLD)
-        screen.blit(title,title.get_rect(center=(WIDTH//2,150)))
+            screen.blit(menu_bg,(0,0))
 
-        # START button
-        if start_button.collidepoint(mouse):
-            pygame.draw.rect(screen,HOVER,start_button)
-        else:
+            title = title_font.render("OSI TOWER",True,GOLD)
+            screen.blit(title,title.get_rect(center=(WIDTH//2,150)))
+
+            # START button
             pygame.draw.rect(screen,BOX,start_button)
+            if start_button.collidepoint(mouse):
+                pygame.draw.rect(screen,(80,80,80),start_button)
 
-        pygame.draw.rect(screen,WHITE,start_button,2)
+            pygame.draw.rect(screen,WHITE,start_button,2)
 
-        start_text = button_font.render("START",True,WHITE)
-        screen.blit(start_text,start_text.get_rect(center=start_button.center))
+            start_text = button_font.render("START",True,WHITE)
+            screen.blit(start_text,start_text.get_rect(center=start_button.center))
 
-        # GUIDE button
-        if guide_button.collidepoint(mouse):
-            pygame.draw.rect(screen,HOVER,guide_button)
-        else:
+            # GUIDE button
             pygame.draw.rect(screen,BOX,guide_button)
+            if guide_button.collidepoint(mouse):
+                pygame.draw.rect(screen,(80,80,80),guide_button)
 
-        pygame.draw.rect(screen,WHITE,guide_button,2)
+            pygame.draw.rect(screen,WHITE,guide_button,2)
 
-        guide_text = button_font.render("GUIDE",True,WHITE)
-        screen.blit(guide_text,guide_text.get_rect(center=guide_button.center))
+            guide_text = button_font.render("GUIDE",True,WHITE)
+            screen.blit(guide_text,guide_text.get_rect(center=guide_button.center))
+
+        # ---------------- GUIDE SCREEN ----------------
+        elif show_guide:
+
+            screen.fill((20,20,30))
+
+            title = title_font.render("GAME GUIDE",True,GOLD)
+            screen.blit(title,title.get_rect(center=(WIDTH//2,120)))
+
+            guide_lines = [
+                "Escape the OSI Tower by solving puzzles on each layer.",
+                "Each floor represents a networking layer.",
+                "",
+                "Collect items and use them to solve puzzles.",
+                "Combine clues to move to the next layer.",
+                "",
+                "Layers:",
+                "Physical → Data Link → Network → Transport → Session → Presentation → Application"
+            ]
+
+            y = 250
+            for line in guide_lines:
+                text = text_font.render(line,True,WHITE)
+                screen.blit(text,(WIDTH//2-350,y))
+                y += 40
+
+            # BACK BUTTON
+            pygame.draw.rect(screen,BOX,back_button)
+            pygame.draw.rect(screen,WHITE,back_button,2)
+
+            back_text = text_font.render("BACK",True,WHITE)
+            screen.blit(back_text,back_text.get_rect(center=back_button.center))
+
+        # ---------------- ZOOM ANIMATION ----------------
+        else:
+
+            zoom_scale += 0.02
+
+            new_width = int(WIDTH * zoom_scale)
+            new_height = int(HEIGHT * zoom_scale)
+
+            zoomed = pygame.transform.scale(menu_bg,(new_width,new_height))
+            rect = zoomed.get_rect(center=(WIDTH//2,HEIGHT//2))
+
+            screen.blit(zoomed,rect)
+
+            if zoom_scale > 2.5:
+                running = False   # exit menu → start game
 
         pygame.display.update()
         clock.tick(60)
 
+        # ---------------- EVENTS ----------------
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -68,8 +119,15 @@ def run_start_menu(screen):
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                if start_button.collidepoint(event.pos):
-                    return "start"
+                if not zooming and not show_guide:
 
-                if guide_button.collidepoint(event.pos):
-                    print("Show guide here")
+                    if start_button.collidepoint(event.pos):
+                        zooming = True
+
+                    elif guide_button.collidepoint(event.pos):
+                        show_guide = True
+
+                elif show_guide:
+
+                    if back_button.collidepoint(event.pos):
+                        show_guide = False
