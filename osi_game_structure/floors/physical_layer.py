@@ -1,21 +1,18 @@
 import pygame
 import sys
 
-def run_physical_layer(screen, inventory):
+def run_physical_layer(screen, inventory, state):   # ✅ ADDED state
 
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
 
     # ---------- CLICK AREAS ----------
-
     switch_rect = pygame.Rect(120,355,135,135)
     wire_rect = pygame.Rect(260,340,185,185)
     hatch_rect = pygame.Rect(390,465,420,150)
-
     restart_rect = pygame.Rect(20,20,40,40)
 
     # ---------- LOAD IMAGES ----------
-
     terrace = pygame.image.load("assets/terrace.png")
     terrace = pygame.transform.scale(terrace,(WIDTH,HEIGHT))
 
@@ -31,12 +28,25 @@ def run_physical_layer(screen, inventory):
     switch_img = pygame.image.load("assets/switch.png")
     switch_img = pygame.transform.scale(switch_img,(switch_rect.width,switch_rect.height))
 
-    # ---------- GAME RESET FUNCTION ----------
-
+    # ---------- DEFAULT STATE ----------
     def reset_room():
-        return False, False, False, False, "Maybe that device controls something."
+        return {
+            "switch_on": False,
+            "door_open": False,
+            "wire_collected": False,
+            "wire_attached": False,
+            "hint": "Maybe that device controls something."
+        }
 
-    switch_on, door_open, wire_collected, wire_attached, hint = reset_room()
+    # ---------- LOAD FROM STATE ----------
+    if not state:   # first time
+        state.update(reset_room())
+
+    switch_on = state.get("switch_on", False)
+    door_open = state.get("door_open", False)
+    wire_collected = state.get("wire_collected", False)
+    wire_attached = state.get("wire_attached", False)
+    hint = state.get("hint", "Maybe that device controls something.")
 
     font = pygame.font.SysFont("Times New Roman",26)
 
@@ -46,16 +56,11 @@ def run_physical_layer(screen, inventory):
 
         mouse = pygame.mouse.get_pos()
 
-        # ---------- DRAW BACKGROUND ----------
-
+        # ---------- DRAW ----------
         screen.blit(terrace,(0,0))
-
-        # ---------- DRAW SWITCH ----------
 
         if switch_on:
             screen.blit(switch_img, switch_rect.topleft)
-
-        # ---------- DRAW HATCH ----------
 
         if door_open and not wire_attached:
             screen.blit(hole, hatch_rect.topleft)
@@ -63,33 +68,20 @@ def run_physical_layer(screen, inventory):
         if wire_attached:
             screen.blit(wired_hole, hatch_rect.topleft)
 
-        # ---------- DRAW HOOKLESS AREA ----------
-
         if wire_collected:
             screen.blit(hookless, wire_rect.topleft)
 
-        # ---------- INVENTORY ----------
-
         inventory.draw(screen)
 
-        # ---------- RESTART BUTTON ----------
-
+        # RESTART BUTTON
         pygame.draw.rect(screen,(200,50,50),restart_rect)
         pygame.draw.rect(screen,(255,255,255),restart_rect,2)
 
         restart_text = font.render("R",True,(255,255,255))
         screen.blit(restart_text,(restart_rect.x+10,restart_rect.y+5))
 
-        # ---------- DEBUG BORDERS ----------
-
-        # pygame.draw.rect(screen,(255,0,255),switch_rect,3)
-        # pygame.draw.rect(screen,(255,255,0),wire_rect,3)
-        # pygame.draw.rect(screen,(255,100,100),hatch_rect,3)
-
-        # ---------- HINT BOX ----------
-
+        # HINT BOX
         hint_box = pygame.Rect(WIDTH//2-300,20,600,60)
-
         pygame.draw.rect(screen,(40,40,40),hint_box)
         pygame.draw.rect(screen,(255,255,255),hint_box,2)
 
@@ -100,7 +92,6 @@ def run_physical_layer(screen, inventory):
         clock.tick(60)
 
         # ---------- EVENTS ----------
-
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -114,7 +105,15 @@ def run_physical_layer(screen, inventory):
                 # RESTART
                 if restart_rect.collidepoint(event.pos):
 
-                    switch_on, door_open, wire_collected, wire_attached, hint = reset_room()
+                    new_state = reset_room()
+                    state.update(new_state)
+
+                    switch_on = state["switch_on"]
+                    door_open = state["door_open"]
+                    wire_collected = state["wire_collected"]
+                    wire_attached = state["wire_attached"]
+                    hint = state["hint"]
+
                     inventory.items.clear()
                     inventory.selected_item = None
                     continue
@@ -153,5 +152,20 @@ def run_physical_layer(screen, inventory):
                     elif wire_attached:
 
                         hint = "Climbing down to the next floor..."
+
+                        # ✅ SAVE STATE BEFORE EXIT
+                        state["switch_on"] = switch_on
+                        state["door_open"] = door_open
+                        state["wire_collected"] = wire_collected
+                        state["wire_attached"] = wire_attached
+                        state["hint"] = hint
+
                         pygame.time.delay(1000)
-                        running = False
+                        return "data"
+
+        # ✅ ALSO SAVE CONTINUOUSLY (important for back navigation)
+        state["switch_on"] = switch_on
+        state["door_open"] = door_open
+        state["wire_collected"] = wire_collected
+        state["wire_attached"] = wire_attached
+        state["hint"] = hint

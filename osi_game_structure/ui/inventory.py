@@ -7,11 +7,16 @@ class Inventory:
         self.selected_item = None
 
         self.icons = {
-            "cable": pygame.image.load("assets/wire.png")
-        }
+        "cable": pygame.image.load("assets/wire.png"),
+        "rednote": pygame.image.load("assets/rednote.png"),
+        "bluenote": pygame.image.load("assets/bluenote.png"),
+        "greennote": pygame.image.load("assets/greennote.png"),
+        "screwdriver": pygame.image.load("assets/screwdriver.jpg")
+    }
 
+    # Resize all icons
         for key in self.icons:
-            self.icons[key] = pygame.transform.scale(self.icons[key], (60,60))
+            self.icons[key] = pygame.transform.scale(self.icons[key], (60, 60))
 
     def add_item(self, item):
         if item not in self.items:
