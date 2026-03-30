@@ -1,7 +1,7 @@
 import pygame
 import sys
 from game.interface import run_interface
-from game.cardbord import run_cardbord   # 🔥 NEW
+from game.cardboard import run_cardbord   # 🔥 NEW
 
 def run_network_layer(screen, inventory, data_state, network_state):
 
@@ -144,11 +144,11 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
                 elif box_rect.collidepoint(event.pos):
                     if not items_collected:
-                        if run_cardbord():   # 🔥 NEW GAME
-                            inventory.add_item("tape")
-                            inventory.add_item("server1")
-                            inventory.add_item("server2")
-                            inventory.add_item("pcwire")
+                        collected_items = run_cardbord(screen)
+                        for item in collected_items:
+                            inventory.add_item(item)
+
+                        if collected_items:
                             items_collected = True
 
                 elif tape_area.collidepoint(event.pos):
