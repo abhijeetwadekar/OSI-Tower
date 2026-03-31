@@ -1,7 +1,7 @@
 import pygame
 import sys
 from game.interface import run_interface
-from game.cardboard import run_cardbord   # 🔥 NEW
+from game.cardboard import run_cardbord   # ✅ popup
 
 def run_network_layer(screen, inventory, data_state, network_state):
 
@@ -16,7 +16,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
     # ---------- CLICK AREAS ----------
     box_rect = pygame.Rect(740, 500, 120, 100)
-    notice_rect = pygame.Rect(300, 100, 120, 80)  # 🔥 NOTICE BOARD
+    notice_rect = pygame.Rect(50, 200, 100,100)
 
     tape_area = pygame.Rect(685, 385, 30, 70)
 
@@ -26,7 +26,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
     pc_screen_rect = pygame.Rect(52, 352, 144, 95)
     pc_cable_rect = pygame.Rect(80, 434, 130, 224)
 
-    door_rect = pygame.Rect(450, 200, 200, 350)
+    door_rect = pygame.Rect(450, 170, 215, 400)
     back_door = pygame.Rect(280, 200, 100, 300)
 
     # lights
@@ -37,7 +37,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
     # ---------- IMAGES ----------
     command_img = pygame.image.load("assets/commandlist.png")
-    command_img = pygame.transform.scale(command_img, (500, 300))
+    command_img = pygame.transform.scale(command_img, (600, 300))
 
     taped_img = pygame.image.load("assets/taped.png")
     taped_img = pygame.transform.scale(taped_img, tape_area.size)
@@ -71,7 +71,8 @@ def run_network_layer(screen, inventory, data_state, network_state):
             "door_popup": False,
             "entered_ip": "",
             "door_unlocked": False,
-            "notice_open": False   # 🔥 NEW
+            "notice_open": False,
+            "cardboard_items": []
         })
 
     items_collected = network_state["items_collected"]
@@ -85,6 +86,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
     entered_ip = network_state["entered_ip"]
     door_unlocked = network_state["door_unlocked"]
     notice_open = network_state["notice_open"]
+    cardboard_items = network_state["cardboard_items"]
 
     while True:
 
@@ -96,9 +98,9 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                # ---------- NOTICE VIEW ----------
+                # ---------- NOTICE ----------
                 if notice_open:
-                    back_btn = pygame.Rect(650, 120, 80, 40)
+                    back_btn = pygame.Rect(650, 120, 120, 40)
                     if back_btn.collidepoint(event.pos):
                         notice_open = False
                     continue
@@ -110,7 +112,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
                         ("1",0,0),("2",1,0),("3",2,0),
                         ("4",0,1),("5",1,1),("6",2,1),
                         ("7",0,2),("8",1,2),("9",2,2),
-                        ("0",1,3)
+                        (".",0,3),("0",1,3)
                     ]
 
                     for key,col,row in keys:
@@ -119,12 +121,12 @@ def run_network_layer(screen, inventory, data_state, network_state):
                         btn = pygame.Rect(x,y,50,50)
 
                         if btn.collidepoint(event.pos):
-                            if len(entered_ip) < 4:
+                            if len(entered_ip) < 15:
                                 entered_ip += key
 
                     enter_btn = pygame.Rect(500,460,80,50)
                     if enter_btn.collidepoint(event.pos):
-                        if entered_ip == "1234":
+                        if entered_ip == "6109":
                             door_unlocked = True
                             door_popup = False
                         else:
@@ -139,17 +141,26 @@ def run_network_layer(screen, inventory, data_state, network_state):
                 # ---------- NORMAL ----------
                 inventory.handle_click(event.pos, screen)
 
+                if back_door.collidepoint(event.pos):
+                    return "data"
+                
                 if notice_rect.collidepoint(event.pos):
                     notice_open = True
 
                 elif box_rect.collidepoint(event.pos):
-                    if not items_collected:
-                        collected_items = run_cardbord(screen)
-                        for item in collected_items:
+
+                    background = screen.copy()
+
+                    # open box with saved state
+                    run_cardbord(screen, background, cardboard_items)
+
+                    # add ONLY new items to inventory
+                    for item in cardboard_items:
+                        if item not in inventory.items:
                             inventory.add_item(item)
 
-                        if collected_items:
-                            items_collected = True
+                    if cardboard_items:
+                        items_collected = True
 
                 elif tape_area.collidepoint(event.pos):
                     if inventory.selected_item == "tape":
@@ -175,7 +186,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
                     if pc_connected and not pc_on:
                         pc_on = True
                     elif pc_on:
-                        if run_interface():
+                        if run_interface(wire_fixed):
                             wifi_done = True
 
                 elif door_rect.collidepoint(event.pos):
@@ -190,11 +201,28 @@ def run_network_layer(screen, inventory, data_state, network_state):
         if wire_fixed:
             screen.blit(taped_img,tape_area)
 
+        # 🔥 SERVER VISUAL SWAP
+        if server1_done:
+            screen.blit(pygame.transform.scale(add_server2_img, server1_rect.size), server1_rect)
+
+        if server2_done:
+            screen.blit(pygame.transform.scale(add_server1_img, server2_rect.size), server2_rect)
+
         if pc_connected:
             screen.blit(pygame.transform.scale(pccable_img, pc_cable_rect.size), pc_cable_rect)
 
         if pc_on:
             screen.blit(pygame.transform.scale(pcon_img, pc_screen_rect.size), pc_screen_rect)
+
+        # 🔥 LIGHT SYSTEM
+        if wire_fixed:
+            screen.blit(pygame.transform.scale(red_light, red_light_rect.size), red_light_rect)
+
+        if pc_connected:
+            screen.blit(pygame.transform.scale(yellow_light, yellow_light_rect.size), yellow_light_rect)
+
+        if server1_done and server2_done:
+            screen.blit(pygame.transform.scale(green_light, green_light_rect.size), green_light_rect)
 
         if wifi_done:
             screen.blit(pygame.transform.scale(blue_light, blue_light_rect.size), blue_light_rect)
@@ -204,13 +232,16 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
         inventory.draw(screen)
 
+        # 🔥 DEBUG HITBOXES
+        pygame.draw.rect(screen, (255, 0, 0), notice_rect, 2)   # notice - red
+        pygame.draw.rect(screen, (0, 255, 0), door_rect, 2)     # door - green
         # ---------- NOTICE ----------
         if notice_open:
-            screen.blit(command_img,(250,150))
+            screen.blit(command_img,(350,150))
             pygame.draw.rect(screen,(200,50,50),(650,120,80,40))
             screen.blit(font.render("BACK",True,(255,255,255)),(655,125))
 
-        # ---------- KEYPAD ----------
+        # ---------- KEYPAD UI ----------
         if door_popup:
 
             overlay = pygame.Surface((WIDTH, HEIGHT))
@@ -220,13 +251,13 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
             pygame.draw.rect(screen,(30,30,30),(300,200,400,350))
 
-            screen.blit(font.render("CODE: "+entered_ip,True,(255,255,255)),(320,220))
+            screen.blit(font.render("IP: "+entered_ip,True,(255,255,255)),(320,220))
 
             keys = [
                 ("1",0,0),("2",1,0),("3",2,0),
                 ("4",0,1),("5",1,1),("6",2,1),
                 ("7",0,2),("8",1,2),("9",2,2),
-                ("0",1,3)
+                (".",0,3),("0",1,3)
             ]
 
             for key,col,row in keys:

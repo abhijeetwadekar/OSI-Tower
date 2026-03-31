@@ -142,6 +142,10 @@ def run_data_layer(screen, inventory, physical_state, data_state):
                         if entered_pin == "792685":
                             door_unlocked = True
                             door_popup = False
+
+                            inventory.remove_item("rednote")
+                            inventory.remove_item("bluenote")
+                            inventory.remove_item("greennote")
                         else:
                             entered_pin = ""
 

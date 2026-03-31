@@ -8,7 +8,7 @@ wifi_connected = False   # 🔥 GLOBAL STATE
 
 # ---------- App Functions ----------
 
-def open_wifi():
+def open_wifi(wire_fixed):   # 🔥 PASS STATE HERE
     win = tk.Toplevel(root)
     center_window(win, 300, 200)
     win.title("WiFi")
@@ -22,16 +22,25 @@ def open_wifi():
 
     def check():
         global wifi_connected
-        if entry.get() == "1234":
+        password = entry.get()
+
+        # 🔥 CASE 1: wire not fixed
+        if not wire_fixed:
+            messagebox.showerror("Error", "Couldn't find WiFi (wire disconnected)")
+            return
+
+        # 🔥 CASE 2: correct password
+        if password == "modern":
             wifi_connected = True
             messagebox.showinfo("Status", "WiFi Connected!")
+            root.destroy()
 
-            root.destroy()   # 🔥 THIS IS THE FIX
-
+        # 🔥 CASE 3: wrong password
         else:
             messagebox.showerror("Error", "Wrong Password")
 
     tk.Button(win, text="Connect", command=check).pack(pady=10)
+
 
 def open_settings():
     win = tk.Toplevel(root)
@@ -44,7 +53,7 @@ def open_settings():
     tk.Label(win, text="OS: Custom OS v1.0", fg="white", bg="#111827").pack(pady=5)
 
 
-def open_cmd():
+def open_cmd(wire_fixed):   # 🔥 PASS STATE HERE
     win = tk.Toplevel(root)
     center_window(win, 350, 250)
     win.title("Command Prompt")
@@ -53,7 +62,7 @@ def open_cmd():
     entry = tk.Entry(win, font=("Consolas", 12), bg="black", fg="lime")
     entry.pack(pady=10)
 
-    output = tk.Text(win, height=2, width=30,
+    output = tk.Text(win, height=4, width=35,
                      font=("Consolas", 12),
                      bg="black", fg="white", bd=0)
     output.pack(pady=10)
@@ -65,10 +74,10 @@ def open_cmd():
     output.tag_config("green", foreground="green")
 
     def run():
-        cmd = entry.get()
+        cmd = entry.get().lower()
         output.delete("1.0", tk.END)
 
-        if cmd.lower() == "ipconfig":
+        if cmd == "ipconfig":
             output.insert(tk.END, "IP Address: ")
 
             output.insert(tk.END, "1")
@@ -89,6 +98,14 @@ def open_cmd():
 
             output.insert(tk.END, "1")
             output.insert(tk.END, "0", "green")
+
+        # 🔥 NEW COMMAND
+        elif cmd == "wlan_interfaces":
+            if wire_fixed:
+                output.insert(tk.END, "WiFi Name: modern_vip\n")
+                output.insert(tk.END, "Password: modern")
+            else:
+                output.insert(tk.END, "No WiFi adapters found")
 
         else:
             output.insert(tk.END, "Irrelevant command")
@@ -114,12 +131,12 @@ def center_window(win, w, h):
     win.geometry(f"{w}x{h}+{x}+{y}")
 
 
-# ---------- MAIN FUNCTION (IMPORTANT) ----------
+# ---------- MAIN FUNCTION ----------
 
-def run_interface():
+def run_interface(wire_fixed):   # 🔥 IMPORTANT CHANGE
     global root, wifi_connected
 
-    wifi_connected = False  # reset every time
+    wifi_connected = False
 
     root = tk.Tk()
     root.title("Computer Interface")
@@ -134,13 +151,13 @@ def run_interface():
                  width=screen_width, height=screen_height)
 
     # ---------- Wallpaper ----------
-    image = Image.open("game/wallpaper.png")   # ✅ FIXED PATH
+    image = Image.open("game/wallpaper.png")
     image = image.resize((screen_width, screen_height))
 
     bg_image = ImageTk.PhotoImage(image)
 
     bg_label = tk.Label(screen, image=bg_image)
-    bg_label.image = bg_image  # 🔥 prevent garbage collection
+    bg_label.image = bg_image
     bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
     # ---------- ICONS ----------
@@ -157,10 +174,21 @@ def run_interface():
         "bd": 2
     }
 
-    tk.Button(icon_frame, text="WiFi", command=open_wifi, **btn_style).grid(row=0, column=0, padx=25, pady=25)
-    tk.Button(icon_frame, text="Settings", command=open_settings, **btn_style).grid(row=0, column=1, padx=25, pady=25)
-    tk.Button(icon_frame, text="Command", command=open_cmd, **btn_style).grid(row=1, column=0, padx=25, pady=25)
-    tk.Button(icon_frame, text="Camera", command=open_camera, **btn_style).grid(row=1, column=1, padx=25, pady=25)
+    tk.Button(icon_frame, text="WiFi",
+              command=lambda: open_wifi(wire_fixed), **btn_style)\
+        .grid(row=0, column=0, padx=25, pady=25)
+
+    tk.Button(icon_frame, text="Settings",
+              command=open_settings, **btn_style)\
+        .grid(row=0, column=1, padx=25, pady=25)
+
+    tk.Button(icon_frame, text="Command",
+              command=lambda: open_cmd(wire_fixed), **btn_style)\
+        .grid(row=1, column=0, padx=25, pady=25)
+
+    tk.Button(icon_frame, text="Camera",
+              command=open_camera, **btn_style)\
+        .grid(row=1, column=1, padx=25, pady=25)
 
     # ---------- TASKBAR ----------
     taskbar = tk.Frame(bg_label, bg="#020617", height=40)
@@ -180,7 +208,6 @@ def run_interface():
 
     update_time()
 
-    # ---------- CLOSE HANDLER ----------
     def on_close():
         root.destroy()
 
@@ -188,4 +215,4 @@ def run_interface():
 
     root.mainloop()
 
-    return wifi_connected   # 🔥 RETURN TO PYGAME
+    return wifi_connected
