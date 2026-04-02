@@ -219,8 +219,8 @@ def run_data_layer(screen, inventory, physical_state, data_state):
         # ---------- DRAW ----------
         screen.blit(bg, (0, 0))
 
-        pygame.draw.rect(screen, (255,0,0), door_rect, 2)
-        pygame.draw.rect(screen, (255,255,0), notice_rect, 2)
+        # pygame.draw.rect(screen, (255,0,0), door_rect, 2)
+        # pygame.draw.rect(screen, (255,255,0), notice_rect, 2)
 
         if box_open:
             screen.blit(pygame.transform.scale(openbox2 if rednote else openbox1, box_rect.size), box_rect)

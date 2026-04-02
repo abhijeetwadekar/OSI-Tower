@@ -66,12 +66,14 @@ def run_network_layer(screen, inventory, data_state, network_state):
             "server1_done": False,
             "server2_done": False,
             "pc_connected": False,
+            "cardboard_looted": False,
             "pc_on": False,
             "wifi_done": False,
             "door_popup": False,
             "entered_ip": "",
             "door_unlocked": False,
             "notice_open": False,
+            "cardboard_taken": [],
             "cardboard_items": []
         })
 
@@ -142,6 +144,20 @@ def run_network_layer(screen, inventory, data_state, network_state):
                 inventory.handle_click(event.pos, screen)
 
                 if back_door.collidepoint(event.pos):
+
+                    network_state["items_collected"] = items_collected
+                    network_state["wire_fixed"] = wire_fixed
+                    network_state["server1_done"] = server1_done
+                    network_state["server2_done"] = server2_done
+                    network_state["pc_connected"] = pc_connected
+                    network_state["pc_on"] = pc_on
+                    network_state["wifi_done"] = wifi_done
+                    network_state["door_popup"] = door_popup
+                    network_state["entered_ip"] = entered_ip
+                    network_state["door_unlocked"] = door_unlocked
+                    network_state["notice_open"] = notice_open
+                    network_state["cardboard_items"] = cardboard_items
+
                     return "data"
                 
                 if notice_rect.collidepoint(event.pos):
@@ -154,13 +170,15 @@ def run_network_layer(screen, inventory, data_state, network_state):
                     # open box with saved state
                     run_cardbord(screen, background, cardboard_items)
 
-                    # add ONLY new items to inventory
+                    # ✅ Give items ONLY FIRST TIME
                     for item in cardboard_items:
-                        if item not in inventory.items:
+                        if item not in network_state["cardboard_taken"]:
                             inventory.add_item(item)
-
+                            network_state["cardboard_taken"].append(item)
+                        network_state["cardboard_looted"] = True
                     if cardboard_items:
                         items_collected = True
+                        
 
                 elif tape_area.collidepoint(event.pos):
                     if inventory.selected_item == "tape":
@@ -191,6 +209,21 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
                 elif door_rect.collidepoint(event.pos):
                     if door_unlocked:
+
+                        # 🔥 SAVE STATE HERE (VERY IMPORTANT)
+                        network_state["items_collected"] = items_collected
+                        network_state["wire_fixed"] = wire_fixed
+                        network_state["server1_done"] = server1_done
+                        network_state["server2_done"] = server2_done
+                        network_state["pc_connected"] = pc_connected
+                        network_state["pc_on"] = pc_on
+                        network_state["wifi_done"] = wifi_done
+                        network_state["door_popup"] = door_popup
+                        network_state["entered_ip"] = entered_ip
+                        network_state["door_unlocked"] = door_unlocked
+                        network_state["notice_open"] = notice_open
+                        network_state["cardboard_items"] = cardboard_items
+
                         return "transport"
                     elif wire_fixed and pc_connected and server1_done and server2_done and wifi_done:
                         door_popup = True
@@ -233,8 +266,8 @@ def run_network_layer(screen, inventory, data_state, network_state):
         inventory.draw(screen)
 
         # 🔥 DEBUG HITBOXES
-        pygame.draw.rect(screen, (255, 0, 0), notice_rect, 2)   # notice - red
-        pygame.draw.rect(screen, (0, 255, 0), door_rect, 2)     # door - green
+        # pygame.draw.rect(screen, (255, 0, 0), notice_rect, 2)   # notice - red
+        # pygame.draw.rect(screen, (0, 255, 0), door_rect, 2)     # door - green
         # ---------- NOTICE ----------
         if notice_open:
             screen.blit(command_img,(350,150))

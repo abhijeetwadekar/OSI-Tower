@@ -36,7 +36,7 @@ def run_start_menu(screen):
 
             screen.blit(menu_bg,(0,0))
 
-            title = title_font.render("OSI TOWER",True,GOLD)
+            title = title_font.render("",True,GOLD)
             screen.blit(title,title.get_rect(center=(WIDTH//2,150)))
 
             # START button
@@ -75,7 +75,8 @@ def run_start_menu(screen):
                 "Combine clues to move to the next layer.",
                 "",
                 "Layers:",
-                "Physical → Data Link → Network → Transport → Session → Presentation → Application"
+                "Physical → Data Link → Network → Transport → "
+                " Session → Presentation → Application"
             ]
 
             y = 250
