@@ -20,6 +20,11 @@ class Inventory:
             "server1": pygame.image.load("assets/server1.png"),
             "server2": pygame.image.load("assets/server2.jpg"),
             "pcwire": pygame.image.load("assets/pcwire.jpg"),
+
+            "torch": pygame.image.load("assets/torch.png"),
+            "wall_hammer": pygame.image.load("assets/wall_hammer.png"),
+
+            "bottle": pygame.image.load("assets/bottle.png"),
         }
 
         # Resize all icons
