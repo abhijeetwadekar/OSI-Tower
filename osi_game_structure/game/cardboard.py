@@ -74,6 +74,20 @@ def run_cardbord(screen, background, collected_items):
         # ---------- DRAW ORIGINAL BACKGROUND ----------
         screen.blit(background, (0, 0))
 
+        # ---------- CARDBOARD HINT ----------
+        hint_font = pygame.font.SysFont(None, 32)
+
+        if len(collected_items) == 4:
+            text = "i guess that's all"
+        else:
+            text = "lot of useful things"
+
+        pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
+        pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
+
+        hint = hint_font.render(text, True, (255,255,255))
+        screen.blit(hint, (320, 65))
+
         # ---------- DARK OVERLAY ----------
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 100))

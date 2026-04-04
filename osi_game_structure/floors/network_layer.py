@@ -72,6 +72,8 @@ def run_network_layer(screen, inventory, data_state, network_state):
             "door_popup": False,
             "entered_ip": "",
             "door_unlocked": False,
+            "temp_hint": None,
+            "cardboard_open": False,
             "notice_open": False,
             "cardboard_taken": [],
             "cardboard_items": []
@@ -165,17 +167,21 @@ def run_network_layer(screen, inventory, data_state, network_state):
 
                 elif box_rect.collidepoint(event.pos):
 
+                    network_state["cardboard_open"] = True   # 👈 START
+
                     background = screen.copy()
 
-                    # open box with saved state
                     run_cardbord(screen, background, cardboard_items)
 
-                    # ✅ Give items ONLY FIRST TIME
+                    network_state["cardboard_open"] = False  # 👈 END
+
                     for item in cardboard_items:
                         if item not in network_state["cardboard_taken"]:
                             inventory.add_item(item)
                             network_state["cardboard_taken"].append(item)
-                        network_state["cardboard_looted"] = True
+
+                    network_state["cardboard_looted"] = True
+
                     if cardboard_items:
                         items_collected = True
                         
@@ -201,7 +207,9 @@ def run_network_layer(screen, inventory, data_state, network_state):
                         inventory.remove_item("pcwire")
 
                 elif pc_screen_rect.collidepoint(event.pos):
-                    if pc_connected and not pc_on:
+                    if not pc_connected:
+                        network_state["temp_hint"] = "HDMI not found"
+                    elif pc_connected and not pc_on:
                         pc_on = True
                     elif pc_on:
                         if run_interface(wire_fixed):
@@ -227,11 +235,12 @@ def run_network_layer(screen, inventory, data_state, network_state):
                         return "transport"
                     elif wire_fixed and pc_connected and server1_done and server2_done and wifi_done:
                         door_popup = True
+
            # ---------- HINT TIMER ----------
-        if transport_state.get("hint_timer", 0) > 0:
-            transport_state["hint_timer"] -= 1
+        if network_state.get("hint_timer", 0) > 0:
+            network_state["hint_timer"] -= 1
         else:
-            transport_state["temp_hint"] = None
+            network_state["temp_hint"] = None
         # ---------- DRAW ----------
         screen.blit(bg,(0,0))
 
@@ -267,7 +276,45 @@ def run_network_layer(screen, inventory, data_state, network_state):
         if door_unlocked:
             screen.blit(open_door, door_rect)
 
+        # ---------- INVENTORY ITEM HINT ----------
+        # ---------- FINAL HINT SYSTEM ----------
+        display_hint = None
+
+        # 🔹 1. INVENTORY PRIORITY
+        if inventory.selected_item:
+            display_hint = inventory.selected_item.replace("_", " ").title()
+
+        # 🔹 2. CARDBOARD ACTIVE
+        elif network_state.get("cardboard_open"):
+            if len(cardboard_items) == 4:
+                display_hint = "i guess that's all"
+            else:
+                display_hint = "lot of useful things"
+
+        # 🔹 3. NORMAL HINTS
+        else:
+            display_hint = network_state.get("temp_hint")
+        # ---------- DRAW HINT ----------
+        if display_hint:
+            hint_font = pygame.font.SysFont(None, 32)
+
+            pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
+            pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
+
+            hint = hint_font.render(display_hint, True, (255,255,255))
+            screen.blit(hint, (320, 65))
+
         inventory.draw(screen)
+        # # ---------- HINT DISPLAY ----------
+        # if network_state.get("temp_hint"):
+
+        #     hint_font = pygame.font.SysFont(None, 32)
+
+        #     pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
+        #     pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
+
+        #     hint = hint_font.render(network_state["temp_hint"], True, (255,255,255))
+        #     screen.blit(hint, (320, 65))
 
         # 🔥 DEBUG HITBOXES
         # pygame.draw.rect(screen, (255, 0, 0), notice_rect, 2)   # notice - red

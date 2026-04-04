@@ -88,7 +88,8 @@ def run_session_layer(screen, inventory, session_state):
             "server_door_placed": False,
             "laptop_solved": False,
             "wall_solved": False,
-
+            "temp_hint": None,
+            "loop_count": 0,
             "server_on": False,
             "viewing_msg": False
         })
@@ -129,12 +130,14 @@ def run_session_layer(screen, inventory, session_state):
                         if run_laptop(screen):
                             session_state["laptop_solved"] = True
                     else:
-                        print("we need to connect server first.")
+                        session_state["temp_hint"] = "we need to connect server first."
 
                 # 5. PC Logic (Black screen / Server Message)
                 elif pc_rect.collidepoint(event.pos):
                     if session_state["server_on"]:
                         session_state["viewing_msg"] = True
+                    else:
+                        session_state["temp_hint"] = "server is offline"
 
                 # 6. Back Door (To Network)
                 elif back_door_rect.collidepoint(event.pos):
@@ -146,6 +149,8 @@ def run_session_layer(screen, inventory, session_state):
                         if run_wall(screen):
                             session_state["wall_solved"] = True
                             inventory.remove_item("wall_hammer")
+                    else:
+                        session_state["temp_hint"] = "need something to break"
 
                 # 8. Server Door & Server Room Entry
 
@@ -162,7 +167,7 @@ def run_session_layer(screen, inventory, session_state):
                                 session_state["server_on"] = True
                                 inventory.remove_item("torch")
                         else:
-                            print("Torch not selected")
+                            session_state["temp_hint"] = "its too dark in there"
 
 
                 # 9️⃣ EXIT DOOR (MIDDLE FINAL DOOR)
@@ -170,8 +175,20 @@ def run_session_layer(screen, inventory, session_state):
 
                     if session_state["laptop_solved"]:
                         if session_state["wall_solved"]:
-                            return "presentation"   # ✅ next layer
+                            session_state["temp_hint"] = "you broke the loop"
+                            return "presentation"
                         else:
+                            session_state["loop_count"] += 1
+
+                            if session_state["loop_count"] == 1:
+                                session_state["temp_hint"] = "you here again?"
+
+                            elif session_state["loop_count"] == 2:
+                                session_state["temp_hint"] = "looks like your in a LOOP"
+
+                            else:
+                                session_state["temp_hint"] = "break the LOOP to continue"
+
                             run_stairs_transition(screen)
                             
 
@@ -244,9 +261,22 @@ def run_session_layer(screen, inventory, session_state):
         # pygame.draw.rect(screen, (255, 20, 147), wall_dent_rect, 2)
         # Server Door - WHITE
         # pygame.draw.rect(screen, (255, 255, 255), server_rect, 2)
+
+        # ---------- INVENTORY ITEM HINT ----------
+        if inventory.selected_item:
+            item_name = inventory.selected_item.replace("_", " ")
+            session_state["temp_hint"] = item_name
+
+        # ---------- DRAW HINT ----------
+        if session_state.get("temp_hint"):
+            hint_font = pygame.font.SysFont(None, 32)
+
+            pygame.draw.rect(screen,(0,0,0),(300,50,500,50))
+            pygame.draw.rect(screen,(255,0,0),(300,50,500,50),2)
+
+            hint = hint_font.render(session_state["temp_hint"], True, (255,255,255))
+            screen.blit(hint, (320, 65))
+
         inventory.draw(screen)
-
-       
-
         pygame.display.update()
         clock.tick(60)

@@ -10,8 +10,8 @@ def run_underground(screen, inventory):
     bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
 
     # ---------- HITBOXES (ADJUST) ----------
-    hitbox1 = pygame.Rect(300, 250, 120, 120)  # back to application
-    hitbox2 = pygame.Rect(800, 300, 120, 120)  # collect axe
+    hitbox1 = pygame.Rect(300, 180, 120, 300) 
+    hitbox2 = pygame.Rect(651, 215, 68, 138)  # collect axe
 
     axe_collected = False
     show_image = False
@@ -44,7 +44,7 @@ def run_underground(screen, inventory):
 
                         # optional image after click
                         try:
-                            replace_img = pygame.image.load("assets/axe.png")
+                            replace_img = pygame.image.load("assets/empty.png")
                             replace_img = pygame.transform.scale(replace_img, hitbox2.size)
                             show_image = True
                         except:
@@ -55,8 +55,8 @@ def run_underground(screen, inventory):
             screen.blit(replace_img, (hitbox2.x, hitbox2.y))
 
         # DEBUG (remove later)
-        pygame.draw.rect(screen, (255,0,0), hitbox1, 2)
-        pygame.draw.rect(screen, (0,255,0), hitbox2, 2)
+        # pygame.draw.rect(screen, (255,0,0), hitbox1, 2)
+        # pygame.draw.rect(screen, (0,255,0), hitbox2, 2)
 
         inventory.draw(screen)
 
