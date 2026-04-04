@@ -61,6 +61,8 @@ def run_transport_layer(screen, inventory, transport_state):
             "green_done": False,
             "red_done": False,
             "yellow_done": False,
+            "temp_hint": None,
+            
             "unlock_popup": False,
             "door_opened": False,
             "final_grid": [[0]*5 for _ in range(5)]
@@ -113,6 +115,7 @@ def run_transport_layer(screen, inventory, transport_state):
                     continue
 
                 if pc_popup:
+
                     if pygame.Rect(650,100,100,40).collidepoint(event.pos):
                         pc_popup = False
                     continue
@@ -151,6 +154,7 @@ def run_transport_layer(screen, inventory, transport_state):
 
                 elif pc_rect.collidepoint(event.pos):
                     pc_popup = True
+                    transport_state["temp_hint"] = "this looks useless"
 
                 elif game_rect.collidepoint(event.pos):
                     result = run_colour_game(screen,transport_state)   # 🔥 now popup
@@ -161,6 +165,8 @@ def run_transport_layer(screen, inventory, transport_state):
                 elif door_rect.collidepoint(event.pos):
                     if green_done and red_done and yellow_done and not door_opened:
                         unlock_popup = True
+                        transport_state["temp_hint"] = "Another color puzzle! isn't it look similar?"
+
                     elif door_opened:
                         transport_state.update(locals())
                         return "session"
@@ -207,11 +213,17 @@ def run_transport_layer(screen, inventory, transport_state):
             screen.blit(font.render("BACK",True,(255,255,255)),(660,110))
 
         if pc_popup:
+            hint_font = pygame.font.SysFont(None, 30)
+            hint = hint_font.render("this looks useless", True, (255,255,0))
+            screen.blit(hint, (350, 120))
             screen.blit(pygame.transform.scale(pc_screen_img,(600,400)),(200,150))
             pygame.draw.rect(screen,(200,50,50),(650,100,100,40))
             screen.blit(font.render("BACK",True,(255,255,255)),(660,110))
 
         if unlock_popup:
+            hint_font = pygame.font.SysFont(None, 30)
+            hint = hint_font.render("Another color puzzle! isn't it look similar?", True, (255,255,0))
+            screen.blit(hint, (300, 120))
             pygame.draw.rect(screen,(30,30,30),(200,150,400,400))
             pygame.draw.rect(screen,(200,50,50),(500,160,80,40))
             screen.blit(font.render("BACK",True,(255,255,255)),(510,170))
@@ -235,6 +247,7 @@ def run_transport_layer(screen, inventory, transport_state):
         # pygame.draw.rect(screen,(0,255,128),tcp_light_rect,2)
         # pygame.draw.rect(screen,(255,0,128),top_light_rect,2)
         # pygame.draw.rect(screen,(128,255,0),udp_light_rect,2)
+        # ---------- DRAW HINT ----------
 
         pygame.display.update()
         clock.tick(60)

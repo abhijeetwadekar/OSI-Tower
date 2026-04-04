@@ -227,7 +227,11 @@ def run_network_layer(screen, inventory, data_state, network_state):
                         return "transport"
                     elif wire_fixed and pc_connected and server1_done and server2_done and wifi_done:
                         door_popup = True
-
+           # ---------- HINT TIMER ----------
+        if transport_state.get("hint_timer", 0) > 0:
+            transport_state["hint_timer"] -= 1
+        else:
+            transport_state["temp_hint"] = None
         # ---------- DRAW ----------
         screen.blit(bg,(0,0))
 

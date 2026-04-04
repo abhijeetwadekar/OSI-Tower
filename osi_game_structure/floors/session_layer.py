@@ -88,6 +88,7 @@ def run_session_layer(screen, inventory, session_state):
             "server_door_placed": False,
             "laptop_solved": False,
             "wall_solved": False,
+
             "server_on": False,
             "viewing_msg": False
         })
