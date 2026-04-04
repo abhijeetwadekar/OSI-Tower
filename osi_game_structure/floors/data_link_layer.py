@@ -23,7 +23,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
     red_note_img = pygame.transform.scale(red_note_img, (500, 400))
     blue_note_img = pygame.transform.scale(blue_note_img, (500, 400))
     green_note_img = pygame.transform.scale(green_note_img, (500, 400))
-    notice_img = pygame.transform.scale(notice_img, (500, 400))
+    notice_img = pygame.transform.scale(notice_img, (700, 400))
 
     # ---------- CLICK AREAS ----------
     box_rect = pygame.Rect(240, 480, 130, 100)
@@ -117,7 +117,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
 
                 # ---------- NOTE POPUP ----------
                 if note_popup:
-                    back_btn = pygame.Rect(600, 120, 80, 40)
+                    back_btn = pygame.Rect(700, 100, 80, 40)
 
                     if back_btn.collidepoint(event.pos):
                         note_popup = False
@@ -250,7 +250,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
             overlay.fill((0,0,0))
             screen.blit(overlay, (0,0))
 
-            note_rect = pygame.Rect(250,100,400,400)
+            note_rect = pygame.Rect(250,100,390,400)
             if current_note == "rednote":
                 screen.blit(red_note_img, note_rect)
             elif current_note == "bluenote":
@@ -260,7 +260,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
             elif current_note == "notice":
                 screen.blit(notice_img, note_rect)
 
-            back_btn = pygame.Rect(600,120,80,40)
+            back_btn = pygame.Rect(700,100,80,40)
             pygame.draw.rect(screen,(200,0,0),back_btn)
             txt = font.render("BACK", True,(255,255,255))
             screen.blit(txt,(back_btn.x+5,back_btn.y+5))

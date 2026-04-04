@@ -61,6 +61,7 @@ def run_presentation_layer(screen, inventory, presentation_state):
 
                 # ---------- HANDLE ZOOM STATES ----------
                 if presentation_state["viewing_scroll"]:
+                    inventory.handle_click(event.pos, screen)
                     if back_btn.collidepoint(event.pos):
                         presentation_state["viewing_scroll"] = False
                     else:

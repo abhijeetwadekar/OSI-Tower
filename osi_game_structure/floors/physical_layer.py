@@ -8,9 +8,9 @@ def run_physical_layer(screen, inventory, state):   # ✅ ADDED state
 
     # ---------- CLICK AREAS ----------
     switch_rect = pygame.Rect(120,355,135,135)
-    wire_rect = pygame.Rect(260,340,185,185)
+    wire_rect = pygame.Rect(260,334,188,187)
     hatch_rect = pygame.Rect(390,465,420,150)
-    restart_rect = pygame.Rect(20,20,40,40)
+    
 
     # ---------- LOAD IMAGES ----------
     terrace = pygame.image.load("assets/terrace.png")
@@ -73,13 +73,7 @@ def run_physical_layer(screen, inventory, state):   # ✅ ADDED state
 
         inventory.draw(screen)
 
-        # RESTART BUTTON
-        pygame.draw.rect(screen,(200,50,50),restart_rect)
-        pygame.draw.rect(screen,(255,255,255),restart_rect,2)
-
-        restart_text = font.render("R",True,(255,255,255))
-        screen.blit(restart_text,(restart_rect.x+10,restart_rect.y+5))
-
+        
         # HINT BOX
         hint_box = pygame.Rect(WIDTH//2-300,20,600,60)
         pygame.draw.rect(screen,(40,40,40),hint_box)
@@ -102,21 +96,7 @@ def run_physical_layer(screen, inventory, state):   # ✅ ADDED state
 
                 inventory.handle_click(event.pos,screen)
 
-                # RESTART
-                if restart_rect.collidepoint(event.pos):
-
-                    new_state = reset_room()
-                    state.update(new_state)
-
-                    switch_on = state["switch_on"]
-                    door_open = state["door_open"]
-                    wire_collected = state["wire_collected"]
-                    wire_attached = state["wire_attached"]
-                    hint = state["hint"]
-
-                    inventory.items.clear()
-                    inventory.selected_item = None
-                    continue
+                
 
                 # SWITCH
                 if switch_rect.collidepoint(event.pos) and not switch_on:

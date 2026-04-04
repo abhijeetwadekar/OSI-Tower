@@ -62,6 +62,7 @@ def run_session_layer(screen, inventory, session_state):
     server_msg_img = pygame.image.load("assets/servermessage.png")
     wall_dent_img = pygame.image.load("assets/wall_dent.png")
     opened_door_img = pygame.image.load("assets/openeddoor5.png")
+    unlocked_img = pygame.image.load("assets/unlocked.png")
 
     # ---------- RECTS (HITBOXES) ----------
     torch_rect = pygame.Rect(200, 390, 50, 40)        # Extreme left
@@ -73,6 +74,11 @@ def run_session_layer(screen, inventory, session_state):
     exit_door_rect = pygame.Rect(650, 200, 180, 325) # Rightmost door
     server_rect = pygame.Rect(910, 180, 100, 400)    # Area for serverdoor.png
     wall_dent_rect = pygame.Rect(535, 325, 60, 30)
+    unlock_icon_rect = pygame.Rect(
+    exit_door_rect.x + 10,
+    exit_door_rect.y + 30,
+    100, 80
+)
 
     # ---------- STATE INITIALIZATION ----------
     if not session_state:
@@ -194,6 +200,12 @@ def run_session_layer(screen, inventory, session_state):
         if session_state["laptop_solved"]:
             screen.blit(pygame.transform.scale(opened_door_img, exit_door_rect.size), exit_door_rect)
 
+
+        if session_state["wall_solved"]:
+            screen.blit(
+                pygame.transform.scale(unlocked_img, unlock_icon_rect.size),
+                unlock_icon_rect
+            )
         # Server Message Zoom
         if session_state["viewing_msg"]:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)

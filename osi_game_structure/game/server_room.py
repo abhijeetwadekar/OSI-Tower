@@ -22,7 +22,7 @@ def run_server(screen,session_state):
     )
 
     # ---------- CENTER DOOR (BACK TO SESSION) ----------
-    door_rect = pygame.Rect(WIDTH//2 - 60, HEIGHT//2 - 120, 120, 240)
+    door_rect = pygame.Rect(WIDTH//2 , HEIGHT//2 - 120, 120, 240)
 
     # ---------- STATE ----------
     lights_on = session_state.get("server_on", False)

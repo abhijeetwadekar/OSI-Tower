@@ -119,6 +119,11 @@ def run_transport_layer(screen, inventory, transport_state):
 
                 if unlock_popup:
                     mx, my = event.pos
+
+                    if pygame.Rect(500, 160, 80, 40).collidepoint((mx, my)):
+                        unlock_popup = False
+                        continue
+
                     for i in range(5):
                         for j in range(5):
                             rect = pygame.Rect(250+j*60, 200+i*60, 50, 50)
@@ -208,9 +213,11 @@ def run_transport_layer(screen, inventory, transport_state):
 
         if unlock_popup:
             pygame.draw.rect(screen,(30,30,30),(200,150,400,400))
+            pygame.draw.rect(screen,(200,50,50),(500,160,80,40))
+            screen.blit(font.render("BACK",True,(255,255,255)),(510,170))
             for i in range(5):
                 for j in range(5):
-                    color = (200,200,200) if final_grid[i][j] else (255,255,255)
+                    color = (120,120,120) if final_grid[i][j] else (255,255,255)
                     pygame.draw.rect(screen,color,(250+j*60,200+i*60,50,50))
                     pygame.draw.rect(screen,(0,0,0),(250+j*60,200+i*60,50,50),2)
 
