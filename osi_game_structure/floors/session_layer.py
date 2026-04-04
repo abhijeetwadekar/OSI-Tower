@@ -271,10 +271,10 @@ def run_session_layer(screen, inventory, session_state):
         if session_state.get("temp_hint"):
             hint_font = pygame.font.SysFont(None, 32)
 
-            pygame.draw.rect(screen,(0,0,0),(300,50,500,50))
-            pygame.draw.rect(screen,(255,0,0),(300,50,500,50),2)
+            # pygame.draw.rect(screen,(0,0,0),(300,50,500,50))
+            # pygame.draw.rect(screen,(255,0,0),(300,50,500,50),2)
 
-            hint = hint_font.render(session_state["temp_hint"], True, (255,255,255))
+            hint = hint_font.render(session_state["temp_hint"], True, (0,0,0))
             screen.blit(hint, (320, 65))
 
         inventory.draw(screen)

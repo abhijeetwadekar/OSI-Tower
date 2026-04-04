@@ -260,10 +260,10 @@ def run_transport_layer(screen, inventory, transport_state):
         if display_hint:
             hint_font = pygame.font.SysFont(None, 32)
 
-            pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
-            pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
+            # pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
+            # pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
 
-            hint = hint_font.render(display_hint, True, (255,255,255))
+            hint = hint_font.render(display_hint, True, (0,0,0))
             screen.blit(hint, (320, 65))
         pygame.display.update()
         clock.tick(60)

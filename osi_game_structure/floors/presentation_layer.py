@@ -129,7 +129,7 @@ def run_presentation_layer(screen, inventory, presentation_state):
         # ---------- ZOOM SCROLL ----------
         if presentation_state["viewing_scroll"]:
             hint_font = pygame.font.SysFont(None, 30)
-            hint = hint_font.render("It can't be empty! think like a spy", True, (255,255,0))
+            hint = hint_font.render("It can't be empty! think like a spy", True, (0,0,0))
 
             screen.blit(hint, (600, 120))
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -183,7 +183,7 @@ def run_presentation_layer(screen, inventory, presentation_state):
         # ---------- BOTTLE HINT ----------
         if inventory.selected_item == "bottle":
             hint_font = pygame.font.SysFont(None, 30)
-            hint = hint_font.render("sodium hydroxide solution", True, (255,255,0))
+            hint = hint_font.render("sodium hydroxide solution", True, (0,0,0))
             screen.blit(hint, (400, 50))
 
         inventory.draw(screen)

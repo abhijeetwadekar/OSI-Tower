@@ -214,7 +214,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
                             inventory.remove_item("screwdriver")
                         else:
                             data_state["temp_hint"] = "Need something to open"
-                            data_state["hint_timer"] = 1
+                            data_state["hint_timer"] = 4
                     elif not puzzle_done:
                         if run_socket_game(screen):
                             puzzle_done = True
@@ -315,7 +315,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
         # ---------- DRAW TEMP HINT ----------
         if data_state.get("temp_hint"):
             hint_font = pygame.font.SysFont(None, 30)
-            hint = hint_font.render(data_state["temp_hint"], True, (255,255,0))
+            hint = hint_font.render(data_state["temp_hint"], True, (0,0,0))
             screen.blit(hint, (300, 50))
         pygame.display.update()
         clock.tick(60)

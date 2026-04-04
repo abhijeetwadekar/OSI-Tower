@@ -73,6 +73,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
             "entered_ip": "",
             "door_unlocked": False,
             "temp_hint": None,
+            "hint_timer": 0,
             "cardboard_open": False,
             "notice_open": False,
             "cardboard_taken": [],
@@ -209,6 +210,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
                 elif pc_screen_rect.collidepoint(event.pos):
                     if not pc_connected:
                         network_state["temp_hint"] = "HDMI not found"
+                        network_state["hint_timer"] = 3
                     elif pc_connected and not pc_on:
                         pc_on = True
                     elif pc_on:
@@ -237,10 +239,6 @@ def run_network_layer(screen, inventory, data_state, network_state):
                         door_popup = True
 
            # ---------- HINT TIMER ----------
-        if network_state.get("hint_timer", 0) > 0:
-            network_state["hint_timer"] -= 1
-        else:
-            network_state["temp_hint"] = None
         # ---------- DRAW ----------
         screen.blit(bg,(0,0))
 
@@ -298,10 +296,10 @@ def run_network_layer(screen, inventory, data_state, network_state):
         if display_hint:
             hint_font = pygame.font.SysFont(None, 32)
 
-            pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
-            pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
+            # pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
+            # pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
 
-            hint = hint_font.render(display_hint, True, (255,255,255))
+            hint = hint_font.render(display_hint, True, (0,0,0))
             screen.blit(hint, (320, 65))
 
         inventory.draw(screen)
