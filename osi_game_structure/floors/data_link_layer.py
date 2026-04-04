@@ -70,6 +70,8 @@ def run_data_layer(screen, inventory, physical_state, data_state):
         "puzzle_done": False,
         "door_unlocked": False,
         "entered_pin": "",
+        "temp_hint": None,
+        "hint_timer": 0,
         "door_popup": False,
         "note_popup": False,
         "current_note": None   # 🔥 which note is open
@@ -108,6 +110,11 @@ def run_data_layer(screen, inventory, physical_state, data_state):
     while running:
 
         for event in pygame.event.get():
+            # ---------- TEMP HINT TIMER ----------
+            if data_state["hint_timer"] > 0:
+                data_state["hint_timer"] -= 1
+            else:
+                data_state["temp_hint"] = None
 
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -205,6 +212,9 @@ def run_data_layer(screen, inventory, physical_state, data_state):
                         if inventory.selected_item == "screwdriver":
                             panel_open = True
                             inventory.remove_item("screwdriver")
+                        else:
+                            data_state["temp_hint"] = "Need something to open"
+                            data_state["hint_timer"] = 1
                     elif not puzzle_done:
                         if run_socket_game(screen):
                             puzzle_done = True
@@ -276,8 +286,15 @@ def run_data_layer(screen, inventory, physical_state, data_state):
             pygame.draw.rect(screen,(30,30,30),(250,150,400,450))
             pygame.draw.rect(screen,(255,255,255),(250,150,400,450),2)
 
+            # ---------- DOOR HINT ----------
+            if not puzzle_done:
+                hint_font = pygame.font.SysFont(None, 26)
+                hint_text = hint_font.render("Repair socket to access", True, (255,255,0))
+                screen.blit(hint_text, (280, 110))
+
             pin_text = font.render("PIN: "+entered_pin,True,(255,255,255))
             screen.blit(pin_text,(300,170))
+
 
             for i in range(10):
                 x = 300 + (i % 3) * 80
@@ -295,6 +312,10 @@ def run_data_layer(screen, inventory, physical_state, data_state):
             screen.blit(txt,(340,510))
 
             pygame.draw.rect(screen,(200,0,0),(600,160,30,30))
-
+        # ---------- DRAW TEMP HINT ----------
+        if data_state.get("temp_hint"):
+            hint_font = pygame.font.SysFont(None, 30)
+            hint = hint_font.render(data_state["temp_hint"], True, (255,255,0))
+            screen.blit(hint, (300, 50))
         pygame.display.update()
         clock.tick(60)
