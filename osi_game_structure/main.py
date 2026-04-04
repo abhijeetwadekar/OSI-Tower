@@ -7,7 +7,8 @@ from floors.data_link_layer import run_data_layer
 from floors.network_layer import run_network_layer
 from floors.transport_layer import run_transport_layer
 from floors.session_layer import run_session_layer
-from floors.presentation_layer import run_presentation_layer   # ✅ NEW
+from floors.presentation_layer import run_presentation_layer
+from floors.application_layer import run_application_layer   # ✅ NEW
 
 pygame.init()
 
@@ -43,8 +44,8 @@ game_state = {
     "network": {},
     "transport": {},
     "session": {},
-    "presentation": {},   # ✅ USED NOW
-    "application": {}
+    "presentation": {},
+    "application": {}   # ✅ NOW USED
 }
 
 # ---------- START MENU ----------
@@ -104,7 +105,7 @@ while running:
             game_state["session"]
         )
 
-    # -------- PRESENTATION ✅ --------
+    # -------- PRESENTATION --------
     elif current_scene == "presentation":
         current_scene = run_presentation_layer(
             screen,
@@ -112,40 +113,48 @@ while running:
             game_state["presentation"]
         )
 
-    # -------- APPLICATION --------
+    # -------- APPLICATION ✅ FULLY CONNECTED --------
     elif current_scene == "application":
-        print("Application layer not built yet")
-        current_scene = "presentation"
+        current_scene = run_application_layer(
+            screen,
+            inventory,
+            game_state["application"]
+        )
 
     # -------- EXIT --------
     elif current_scene == "quit":
         running = False
 
 pygame.quit()
-# # ----------------------------------------------------------------------------------
+
+
+# ==================================================================================
+# 🔧 DEBUG MODE: RUN APPLICATION LAYER ONLY (KEEP COMMENTED)
+# ==================================================================================
 
 # import pygame
 # from ui.inventory import Inventory
-# from floors.presentation_layer import run_presentation_layer
-
+# from floors.application_layer import run_application_layer
+#
 # pygame.init()
-
+#
 # WIDTH, HEIGHT = 1152, 768
 # screen = pygame.display.set_mode((WIDTH, HEIGHT))
-# pygame.display.set_caption("Test Presentation Layer")
-
+# pygame.display.set_caption("Test Application Layer")
+#
 # inventory = Inventory()
-
-
-
-# presentation_state = {}
-
-# # Run directly
+# application_state = {}
+#
 # while True:
-#     next_scene = run_presentation_layer(screen, inventory, presentation_state)
-
-#     if next_scene == "session":
-#         print("Going back to session (test loop continues)")
-
-#     elif next_scene == "application":
-#         print("Going to application layer (test loop continues)")
+#     next_scene = run_application_layer(screen, inventory, application_state)
+#
+#     if next_scene == "presentation":
+#         print("Back to presentation (loop continues)")
+#
+#     elif next_scene == "underground":
+#         print("Going underground (test loop continues)")
+#
+#     elif next_scene == "quit":
+#         break
+#
+# pygame.quit()
