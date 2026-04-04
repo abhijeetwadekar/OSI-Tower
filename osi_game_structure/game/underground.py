@@ -6,7 +6,7 @@ def run_underground(screen, inventory):
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
 
-    bg = pygame.image.load("assets/bg.png")
+    bg = pygame.image.load("assets/godown.png")
     bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
 
     # ---------- HITBOXES (ADJUST) ----------

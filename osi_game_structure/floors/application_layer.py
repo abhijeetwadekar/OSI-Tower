@@ -1,7 +1,7 @@
 import pygame
 import sys
-from game.rotary_lock_game import run_rotary_lock_game
-
+from game.safe import run_safe_game
+from game.underground import run_underground
 
 def run_application_layer(screen, inventory, application_state):
 
@@ -11,32 +11,29 @@ def run_application_layer(screen, inventory, application_state):
 
     # ---------- IMAGES ----------
     bg = pygame.image.load("assets/application.png")
-    bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
+    INV_HEIGH = 160   # adjust if your inventory height is different
+    bg = pygame.transform.scale(bg, (WIDTH-160, HEIGHT))
 
-    locker_img = pygame.image.load("assets/locker.png")
-    locker_open_img = pygame.image.load("assets/locker_open.png")
-
+    locker_open_img = pygame.image.load("assets/locker.png")  # only overlay after solve
     siren_img = pygame.image.load("assets/siren.png")
 
-    closed_door_img = pygame.image.load("assets/underground_door.png")
     open_door_img = pygame.image.load("assets/openeddoor7.png")
 
     note_img = pygame.image.load("assets/final_note.jpeg")
     watch_img = pygame.image.load("assets/watch.png")
 
     # ---------- RECTS ----------
-    back_rect = pygame.Rect(20, 200, 100, 200)  # back to presentation
-    door_rect = pygame.Rect(140, 200, 140, 250)
+    back_rect = pygame.Rect(20, 150, 100, 400)
+    door_rect = pygame.Rect(200, 185, 140, 360)
 
-    locker_rect = pygame.Rect(WIDTH // 2 - 100, 200, 200, 200)
-    siren_rect = pygame.Rect(WIDTH // 2 + 120, 200, 100, 100)
+    locker_rect = pygame.Rect(WIDTH // 2 -88, 323, 170, 110)
+    siren_rect = pygame.Rect(WIDTH // 2 + 160, 200, 100, 100)
 
-    table_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT - 200, 240, 120)
+    table_rect = pygame.Rect(WIDTH // 2 - 140, HEIGHT - 240, 100, 100)
 
-    window_rect = pygame.Rect(WIDTH - 200, 150, 150, 250)
+    window_rect = pygame.Rect(WIDTH - 250, 150, 150, 250)
 
     back_btn = pygame.Rect(WIDTH // 2 - 50, HEIGHT - 120, 100, 40)
-
     input_box = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 30, 300, 60)
 
     # ---------- STATE ----------
@@ -54,7 +51,7 @@ def run_application_layer(screen, inventory, application_state):
             "broken_glass": False
         })
 
-    # Flicker control
+    # ---------- FLICKER ----------
     flicker = False
     flicker_timer = 0
 
@@ -64,6 +61,7 @@ def run_application_layer(screen, inventory, application_state):
 
         # ---------- EVENTS ----------
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
@@ -77,6 +75,7 @@ def run_application_layer(screen, inventory, application_state):
                             application_state["door_unlocked"] = True
                         application_state["entering_password"] = False
                         application_state["input_text"] = ""
+
                     elif event.key == pygame.K_BACKSPACE:
                         application_state["input_text"] = application_state["input_text"][:-1]
                     else:
@@ -88,6 +87,7 @@ def run_application_layer(screen, inventory, application_state):
                             application_state["siren_stopped"] = True
                         application_state["entering_siren_code"] = False
                         application_state["input_text"] = ""
+
                     elif event.key == pygame.K_BACKSPACE:
                         application_state["input_text"] = application_state["input_text"][:-1]
                     else:
@@ -114,16 +114,19 @@ def run_application_layer(screen, inventory, application_state):
 
                 # ---------- DOOR ----------
                 elif door_rect.collidepoint(event.pos):
+
                     if not application_state["door_unlocked"]:
                         application_state["entering_password"] = True
                     else:
-                        return "underground"
+                        result = run_underground(screen, inventory)
+                        if result == "application":
+                            pass
 
                 # ---------- LOCKER ----------
                 elif locker_rect.collidepoint(event.pos):
 
                     if not application_state["locker_unlocked"]:
-                        if run_rotary_lock_game(screen):
+                        if run_safe_game(screen):
                             application_state["locker_unlocked"] = True
                             application_state["siren_active"] = True
 
@@ -152,17 +155,13 @@ def run_application_layer(screen, inventory, application_state):
         # ---------- DRAW ----------
         screen.blit(bg, (0, 0))
 
-        # Locker
+        # 🔥 ONLY DRAW OPEN LOCKER OVERLAY
         if application_state["locker_unlocked"]:
             screen.blit(pygame.transform.scale(locker_open_img, locker_rect.size), locker_rect)
-        else:
-            screen.blit(pygame.transform.scale(locker_img, locker_rect.size), locker_rect)
 
-        # Door
+        # 🔥 ONLY DRAW OPEN DOOR OVERLAY
         if application_state["door_unlocked"]:
             screen.blit(pygame.transform.scale(open_door_img, door_rect.size), door_rect)
-        else:
-            screen.blit(pygame.transform.scale(closed_door_img, door_rect.size), door_rect)
 
         # ---------- SIREN FLICKER ----------
         if application_state["siren_active"] and not application_state["siren_stopped"]:
@@ -171,15 +170,16 @@ def run_application_layer(screen, inventory, application_state):
                 flicker_timer = 0
 
             if flicker:
-                screen.blit(pygame.transform.scale(siren_img, (WIDTH, HEIGHT)), (0, 0))
+                screen.blit(pygame.transform.scale(siren_img, (WIDTH-160, HEIGHT)), (0, 0))
 
-        # ---------- POPUPS ----------
+        # ---------- NOTE ----------
         if application_state["viewing_note"]:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
             screen.blit(overlay, (0, 0))
             screen.blit(pygame.transform.scale(note_img, (WIDTH - 200, HEIGHT - 100)), (100, 50))
 
+        # ---------- WATCH ----------
         if application_state["viewing_watch"]:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
@@ -191,7 +191,7 @@ def run_application_layer(screen, inventory, application_state):
             screen.blit(font.render("BACK", True, (255, 255, 255)),
                         (back_btn.x + 10, back_btn.y + 5))
 
-        # ---------- INPUT UI ----------
+        # ---------- INPUT ----------
         if application_state["entering_password"] or application_state["entering_siren_code"]:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
@@ -206,25 +206,13 @@ def run_application_layer(screen, inventory, application_state):
             screen.blit(font.render(label, True, (255, 255, 255)),
                         (input_box.x, input_box.y - 40))
 
-        # ---------- DEBUG RECTS ----------
-
-        # Back - YELLOW
-        pygame.draw.rect(screen, (255, 255, 0), back_rect, 2)
-
-        # Door - RED
-        pygame.draw.rect(screen, (255, 0, 0), door_rect, 2)
-
-        # Locker - GREEN
-        pygame.draw.rect(screen, (0, 255, 0), locker_rect, 2)
-
-        # Siren - PURPLE
-        pygame.draw.rect(screen, (160, 32, 240), siren_rect, 2)
-
-        # Table - CYAN
-        pygame.draw.rect(screen, (0, 255, 255), table_rect, 2)
-
-        # Window - ORANGE
-        pygame.draw.rect(screen, (255, 165, 0), window_rect, 2)
+        # ---------- DEBUG ----------
+        pygame.draw.rect(screen, (255,255,0), back_rect, 2)
+        pygame.draw.rect(screen, (255,0,0), door_rect, 2)
+        pygame.draw.rect(screen, (0,255,0), locker_rect, 2)
+        pygame.draw.rect(screen, (160,32,240), siren_rect, 2)
+        pygame.draw.rect(screen, (0,255,255), table_rect, 2)
+        pygame.draw.rect(screen, (255,165,0), window_rect, 2)
 
         inventory.draw(screen)
 
