@@ -25,6 +25,7 @@ class Inventory:
             "wall_hammer": pygame.image.load("assets/wall_hammer.png"),
 
             "bottle": pygame.image.load("assets/bottle.png"),
+            "axe":  pygame.image.load("assets/axe.png"),
         }
 
         # Resize all icons
