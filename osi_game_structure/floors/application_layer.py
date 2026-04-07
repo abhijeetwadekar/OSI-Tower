@@ -38,8 +38,30 @@ def play_game_over(screen):
         clock.tick(30)  # control FPS
 
     cap.release()
-    pygame.quit()
-    sys.exit()
+    try:
+        end_img = pygame.image.load("assets/end.jpeg")
+        end_img = pygame.transform.scale(end_img, screen.get_size())
+    except:
+        # Fallback if image is missing so the game doesn't crash
+        end_img = pygame.Surface(screen.get_size())
+        end_img.fill((0, 0, 0))
+
+    # Static loop to keep the end screen visible
+    while True:
+        screen.blit(end_img, (0, 0))
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            # Optional: Allow them to press any key to exit
+            if event.type == pygame.KEYDOWN:
+                pygame.quit()
+                sys.exit()
+
+        clock.tick(15)
 
 
 def run_application_layer(screen, inventory, application_state, draw_hud=None):
