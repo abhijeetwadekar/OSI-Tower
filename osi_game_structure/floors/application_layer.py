@@ -79,6 +79,10 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
     note_img = pygame.image.load("assets/final_note.jpeg")
     watch_img = pygame.image.load("assets/watch.png")
     broken_glass_img = pygame.image.load("assets/brokenglass.png")
+    stairs1_img = pygame.image.load("assets/stairs.jpg")
+    stairs2_img = pygame.image.load("assets/stairs1.jpg")
+    stairs1_img = pygame.transform.scale(stairs1_img, (WIDTH, HEIGHT))
+    stairs2_img = pygame.transform.scale(stairs2_img, (WIDTH, HEIGHT))
 
     # ---------- RECTS ----------
     back_rect = pygame.Rect(20, 150, 100, 400)
@@ -165,6 +169,14 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
                     if not application_state["door_unlocked"]:
                         application_state["entering_password"] = True
                     else:
+                        screen.blit(stairs1_img, (0, 0))
+                        pygame.display.update()
+                        pygame.time.delay(500) # 0.5 seconds
+
+                        # Show second stair image
+                        screen.blit(stairs2_img, (0, 0))
+                        pygame.display.update()
+                        pygame.time.delay(500)
                         run_underground(screen, inventory)
 
                 elif locker_rect.collidepoint(event.pos):
