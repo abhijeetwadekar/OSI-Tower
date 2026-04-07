@@ -11,6 +11,15 @@ from floors.session_layer import run_session_layer
 from floors.presentation_layer import run_presentation_layer
 from floors.application_layer import run_application_layer
 
+import base64
+
+def save_score(name, time_taken):
+    data = f"{name}:{time_taken}"
+    encoded = base64.b64encode(data.encode()).decode()
+
+    with open("leaderboard.dat", "a") as file:
+        file.write(encoded + "\n")
+
 pygame.init()
 
 SCREEN_WIDTH = 1152
@@ -57,7 +66,7 @@ countdown_start = None
 COUNTDOWN_LIMIT = 420                      # 7 minutes
 
 # ---------- START MENU ----------
-run_start_menu(screen)
+player_name = run_start_menu(screen)
 game_start_time = time.time()              # ← clock starts after menu
 
 # ---------- DRAW HUD ----------           # ← ADD THIS FUNCTION
@@ -144,6 +153,21 @@ while running:
         current_scene = run_application_layer(screen, inventory, game_state["application"],draw_hud)
 
     elif current_scene == "quit":
+
+        print("GAME OVER TRIGGERED") 
+    
+        # ⏱ STOP TIMER
+        total_time = int(time.time() - game_start_time)
+
+        # 💾 SAVE DATA
+        save_score(player_name, total_time)
+
+        print(f"Saved: {player_name} - {total_time} seconds")
+
+        # 🎬 PLAY VIDEO
+        from floors.application_layer import play_game_over
+        play_game_over(screen)
+
         running = False
 
     # -------- DRAW HUD ON TOP --------   # ← ADD THIS
