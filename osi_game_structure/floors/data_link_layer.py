@@ -24,6 +24,7 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
     blue_note_img = pygame.transform.scale(blue_note_img, (500, 400))
     green_note_img = pygame.transform.scale(green_note_img, (500, 400))
     notice_img = pygame.transform.scale(notice_img, (700, 400))
+    trap_rect = pygame.Rect(45,170, 130, 250)  # left middle
 
     # ---------- CLICK AREAS ----------
     box_rect = pygame.Rect(240, 480, 130, 100)
@@ -32,11 +33,19 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
     toolbox_rect = pygame.Rect(750, 500, 160, 130)
     notice_rect = pygame.Rect(GAME_WIDTH-160, 250, 140, 120)
 
+
     panel_rect = pygame.Rect(603, 350, 33, 70)
     door_rect = pygame.Rect(390, 215, 210, 365)
     hole_rect = pygame.Rect(360, 40, 250, 80)
 
     # ---------- LOAD IMAGES ----------
+    fall_img = pygame.image.load("assets/fall.jpeg")
+    dead_img = pygame.image.load("assets/dead.jpeg")
+    revive_img = pygame.image.load("assets/revive.jpeg")
+
+    fall_img = pygame.transform.scale(fall_img, (WIDTH, HEIGHT))
+    dead_img = pygame.transform.scale(dead_img, (WIDTH, HEIGHT))
+    revive_img = pygame.transform.scale(revive_img, (WIDTH, HEIGHT))
     openbox1 = pygame.image.load("assets/openbox.png")
     openbox2 = pygame.image.load("assets/openbox2.png")
 
@@ -121,7 +130,33 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # ---------- TRAP ----------
+                if trap_rect.collidepoint(event.pos):
 
+                    # FALL
+                    screen.blit(fall_img, (0, 0))
+                    pygame.display.update()
+                    pygame.time.delay(500)
+
+                    # DEAD
+                    screen.blit(dead_img, (0, 0))
+                    pygame.display.update()
+                    pygame.time.delay(500)
+
+                    # REVIVE (wait for click)
+                    waiting = True
+                    while waiting:
+                        screen.blit(revive_img, (0, 0))
+                        pygame.display.update()
+
+                        for e in pygame.event.get():
+                            if e.type == pygame.QUIT:
+                                pygame.quit()
+                                sys.exit()
+                            if e.type == pygame.MOUSEBUTTONDOWN:
+                                waiting = False
+
+                    continue
                 # ---------- NOTE POPUP ----------
                 if note_popup:
                     back_btn = pygame.Rect(700, 100, 80, 40)
@@ -231,6 +266,7 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
 
         # pygame.draw.rect(screen, (255,0,0), door_rect, 2)
         # pygame.draw.rect(screen, (255,255,0), notice_rect, 2)
+        # pygame.draw.rect(screen, (255,0,0), trap_rect, 2)
 
         if box_open:
             screen.blit(pygame.transform.scale(openbox2 if rednote else openbox1, box_rect.size), box_rect)

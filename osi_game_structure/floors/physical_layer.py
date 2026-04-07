@@ -10,12 +10,18 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
     switch_rect = pygame.Rect(120,355,135,135)
     wire_rect = pygame.Rect(260,334,188,187)
     hatch_rect = pygame.Rect(390,465,420,150)
-    
+    trap_rect = pygame.Rect(350,50, 600, 200)
 
     # ---------- LOAD IMAGES ----------
     terrace = pygame.image.load("assets/terrace.png")
     terrace = pygame.transform.scale(terrace,(WIDTH,HEIGHT))
+    fall_img = pygame.image.load("assets/fall.jpeg")
+    dead_img = pygame.image.load("assets/dead.jpeg")
+    revive_img = pygame.image.load("assets/revive.jpeg")
 
+    fall_img = pygame.transform.scale(fall_img, (WIDTH, HEIGHT))
+    dead_img = pygame.transform.scale(dead_img, (WIDTH, HEIGHT))
+    revive_img = pygame.transform.scale(revive_img, (WIDTH, HEIGHT))
     hole = pygame.image.load("assets/hole.png")
     hole = pygame.transform.scale(hole,(hatch_rect.width,hatch_rect.height))
 
@@ -35,7 +41,6 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
             "door_open": False,
             "wire_collected": False,
             "wire_attached": False,
-            "hint": "Maybe that device controls something."
         }
 
     # ---------- LOAD FROM STATE ----------
@@ -46,14 +51,19 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
     door_open = state.get("door_open", False)
     wire_collected = state.get("wire_collected", False)
     wire_attached = state.get("wire_attached", False)
-    hint = state.get("hint", "Maybe that device controls something.")
 
     font = pygame.font.SysFont("Times New Roman",26)
+   
+    message = ""
+    message_timer = 0
 
     running = True
 
     while running:
-
+        if message_timer > 0:
+            message_timer -= 1
+            if message_timer == 0:
+                message = ""
         mouse = pygame.mouse.get_pos()
 
         # ---------- DRAW ----------
@@ -71,19 +81,15 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
         if wire_collected:
             screen.blit(hookless, wire_rect.topleft)
 
+        if message:
+            msg_surface = font.render(message, True, (0, 0, 0))
+            screen.blit(msg_surface, (WIDTH//2 - msg_surface.get_width()//2, 40))
         inventory.draw(screen,draw_hud)
-
-        
-        # HINT BOX
-        hint_box = pygame.Rect(WIDTH//2-300,20,600,60)
-        pygame.draw.rect(screen,(40,40,40),hint_box)
-        pygame.draw.rect(screen,(255,255,255),hint_box,2)
-
-        text = font.render(hint,True,(255,255,255))
-        screen.blit(text,text.get_rect(center=hint_box.center))
 
         pygame.display.update()
         clock.tick(60)
+        
+       
 
         # ---------- EVENTS ----------
         for event in pygame.event.get():
@@ -96,6 +102,35 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
 
                 inventory.handle_click(event.pos,screen)
 
+                # TRAP AREA (CENTER)
+                if trap_rect.collidepoint(event.pos):
+
+                    # FALL
+                    screen.blit(fall_img, (0, 0))
+                    pygame.display.update()
+                    pygame.time.delay(500)
+
+                    # DEAD
+                    screen.blit(dead_img, (0, 0))
+                    pygame.display.update()
+                    pygame.time.delay(500)
+
+                    # REVIVE SCREEN (wait for click)
+                    waiting = True
+                    while waiting:
+                        screen.blit(revive_img, (0, 0))
+                        pygame.display.update()
+
+                        for e in pygame.event.get():
+                            if e.type == pygame.QUIT:
+                                pygame.quit()
+                                sys.exit()
+                            if e.type == pygame.MOUSEBUTTONDOWN:
+                                waiting = False
+
+                    # Return to same game state (DO NOTHING)
+                    continue
+
                 
 
                 # SWITCH
@@ -103,42 +138,37 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
 
                     switch_on = True
                     door_open = True
-                    hint = "The hatch opens. But the ladder is broken."
 
                 # PICK WIRE
                 elif wire_rect.collidepoint(event.pos) and not wire_collected:
 
                     wire_collected = True
                     inventory.add_item("cable")
-                    hint = "You picked up a cable."
+                   
 
                 # HATCH CLICK
+                
                 elif hatch_rect.collidepoint(event.pos):
 
                     if not door_open:
-                        hint = "The hatch won't open."
+                        message = "The hatch is locked."
+                        message_timer = 120
 
                     elif door_open and not wire_attached:
 
                         if inventory.selected_item == "cable":
-
                             wire_attached = True
                             inventory.remove_item("cable")
-                            hint = "You tie the cable and prepare to go down."
-
                         else:
-                            hint = "The ladder is broken. Need something to climb."
+                            message = "The ladder is broken."
+                            message_timer = 120
 
                     elif wire_attached:
-
-                        hint = "Climbing down to the next floor..."
-
-                        # ✅ SAVE STATE BEFORE EXIT
+                        # ✅ SAVE ONLY HERE (before leaving)
                         state["switch_on"] = switch_on
                         state["door_open"] = door_open
                         state["wire_collected"] = wire_collected
                         state["wire_attached"] = wire_attached
-                        state["hint"] = hint
 
                         pygame.time.delay(1000)
                         return "data"
@@ -148,4 +178,5 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
         state["door_open"] = door_open
         state["wire_collected"] = wire_collected
         state["wire_attached"] = wire_attached
-        state["hint"] = hint
+    
+        

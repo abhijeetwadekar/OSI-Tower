@@ -7,7 +7,6 @@ from game.underground import run_underground
 
 
 def play_game_over(screen):
-
     cap = cv2.VideoCapture("assets/game_over.mp4")
     clock = pygame.time.Clock()
 
@@ -39,18 +38,35 @@ def play_game_over(screen):
         clock.tick(30)  # control FPS
 
     cap.release()
-
-    # After video ends → quit game
     pygame.quit()
     sys.exit()
 
 
-def run_application_layer(screen, inventory, application_state,draw_hud=None):
-
+def run_application_layer(screen, inventory, application_state, draw_hud=None):
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 35)
     big_font = pygame.font.SysFont(None, 45)
+
+    # ---------- INITIALIZE STATE ----------
+    # Using .get ensures we don't overwrite existing state but fill in missing keys
+    default_state = {
+        "locker_unlocked": False,
+        "siren_active": False,
+        "siren_stopped": False,
+        "door_unlocked": False,
+        "viewing_note": False,
+        "viewing_watch": False,
+        "entering_password": False,
+        "entering_siren_code": False,
+        "input_text": "",
+        "broken_glass": False,
+        "message": "",
+        "message_timer": 0
+    }
+    for key, value in default_state.items():
+        if key not in application_state:
+            application_state[key] = value
 
     # ---------- IMAGES ----------
     bg = pygame.image.load("assets/application.png")
@@ -75,23 +91,6 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
     back_btn = pygame.Rect(WIDTH // 2 - 50, HEIGHT - 120, 100, 40)
     input_box = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 30, 300, 60)
 
-    # ---------- STATE ----------
-    if not application_state:
-        application_state.update({
-            "locker_unlocked": False,
-            "siren_active": False,
-            "siren_stopped": False,
-            "door_unlocked": False,
-            "viewing_note": False,
-            "viewing_watch": False,
-            "entering_password": False,
-            "entering_siren_code": False,
-            "input_text": "",
-            "broken_glass": False,
-            "message": "",
-            "message_timer": 0
-        })
-
     flicker = False
     flicker_timer = 0
 
@@ -107,14 +106,11 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
 
         # ---------- EVENTS ----------
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-            # ---------- KEY INPUT ----------
             if event.type == pygame.KEYDOWN:
-
                 if event.key == pygame.K_ESCAPE:
                     application_state["entering_password"] = False
                     application_state["entering_siren_code"] = False
@@ -143,9 +139,8 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
                         if len(application_state["input_text"]) < 4:
                             application_state["input_text"] += event.unicode
 
-            # ---------- MOUSE ----------
             if event.type == pygame.MOUSEBUTTONDOWN:
-
+                # Handle overlays first
                 if application_state["entering_password"] or application_state["entering_siren_code"]:
                     if back_btn.collidepoint(event.pos):
                         application_state["entering_password"] = False
@@ -159,13 +154,10 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
                         application_state["viewing_watch"] = False
                     continue
                 
-                if application_state["siren_active"] and not application_state["siren_stopped"]:
-                    if siren_rect.collidepoint(event.pos):
-                        application_state["entering_siren_code"] = True
-                    # block everything else silently
-                    continue
+                # Check Inventory
                 inventory.handle_click(event.pos, screen)
 
+                # World Interactions
                 if back_rect.collidepoint(event.pos):
                     return "presentation"
 
@@ -182,12 +174,15 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
                             application_state["siren_active"] = True
                     elif application_state["siren_stopped"]:
                         application_state["viewing_note"] = True
+                    else:
+                        application_state["message"] = "Alarm is ringing!"
+                        application_state["message_timer"] = 1000
 
                 elif siren_rect.collidepoint(event.pos):
                     if application_state["siren_active"] and not application_state["siren_stopped"]:
                         application_state["entering_siren_code"] = True
                     else:
-                        application_state["message"] = "Siren is OFF, nothing to do"
+                        application_state["message"] = "Siren is OFF"
                         application_state["message_timer"] = 1000
 
                 elif table_rect.collidepoint(event.pos):
@@ -203,7 +198,7 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
                     else:
                         play_game_over(screen)
 
-        # ---------- DRAW ----------
+        # ---------- DRAWING ----------
         screen.blit(bg, (0, 0))
 
         if application_state["locker_unlocked"]:
@@ -215,23 +210,29 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
         if application_state["broken_glass"]:
             screen.blit(pygame.transform.scale(broken_glass_img, window_rect.size), window_rect)
 
-        # ---------- SIREN ----------
+        # ---------- SIREN EFFECTS ----------
         if application_state["siren_active"] and not application_state["siren_stopped"]:
             if flicker_timer > 250:
                 flicker = not flicker
                 flicker_timer = 0
-
             if flicker:
-                screen.blit(pygame.transform.scale(siren_img, (WIDTH - 160, HEIGHT)), (0, 0))
-
-            # RED WARNING TEXT
+                # Flash the siren overlay
+                siren_scaled = pygame.transform.scale(siren_img, (WIDTH - 160, HEIGHT))
+                screen.blit(siren_scaled, (0, 0))
+            
             txt = big_font.render("SAFE TRIGGERED ALARM! TURN IT OFF!", True, (255, 0, 0))
             screen.blit(txt, (WIDTH // 2 - 300, 50))
 
-        # ---------- MESSAGE ----------
-        if application_state["message"]:
-            msg = font.render(application_state["message"], True, (0, 0, 0))
-            screen.blit(msg, (WIDTH // 2 - 150,70))
+        # ---------- UI OVERLAYS (Notes/Watch) ----------
+        if application_state["viewing_note"]:
+            screen.blit(pygame.transform.scale(note_img, (700, 600)), (250, 50))
+            pygame.draw.rect(screen, (200, 50, 50), back_btn)
+            screen.blit(font.render("BACK", True, (255, 255, 255)), (back_btn.x + 10, back_btn.y + 5))
+
+        if application_state["viewing_watch"]:
+            screen.blit(pygame.transform.scale(watch_img, (400, 300)), (WIDTH//2 - 150, 300))
+            pygame.draw.rect(screen, (200, 50, 50), back_btn)
+            screen.blit(font.render("BACK", True, (255, 255, 255)), (back_btn.x + 10, back_btn.y + 5))
 
         # ---------- INPUT UI ----------
         if application_state["entering_password"] or application_state["entering_siren_code"]:
@@ -240,27 +241,31 @@ def run_application_layer(screen, inventory, application_state,draw_hud=None):
             overlay.fill((0, 0, 0))
             screen.blit(overlay, (0, 0))
 
-            label = "Enter Password" if application_state["entering_password"] else "Enter Code"
-            screen.blit(big_font.render(label, True, (255, 255, 255)),
-                        (WIDTH // 2 - 120, HEIGHT // 2 - 120))
+            label = "Enter Password" if application_state["entering_password"] else "Enter Code (STOP)"
+            screen.blit(big_font.render(label, True, (255, 255, 255)), (WIDTH // 2 - 120, HEIGHT // 2 - 120))
 
-            # SIREN BOXES
             if application_state["entering_siren_code"]:
                 for i in range(4):
-                    box = pygame.Rect(WIDTH // 2 - 100 + i * 60, HEIGHT // 2, 50, 60)
+                    box = pygame.Rect(WIDTH // 2 - 110 + i * 60, HEIGHT // 2, 50, 60)
                     pygame.draw.rect(screen, (255, 255, 255), box, 2)
-
                     if i < len(application_state["input_text"]):
-                        char = font.render(application_state["input_text"][i], True, (255, 255, 255))
-                        screen.blit(char, (box.x + 15, box.y + 10))
+                        char = font.render(application_state["input_text"][i].upper(), True, (255, 255, 255))
+                        screen.blit(char, (box.x + 15, box.y + 15))
             else:
                 pygame.draw.rect(screen, (255, 255, 255), input_box, 2)
                 txt = font.render(application_state["input_text"], True, (255, 255, 255))
-                screen.blit(txt, (input_box.x + 10, input_box.y + 10))
+                screen.blit(txt, (input_box.x + 10, input_box.y + 15))
 
             pygame.draw.rect(screen, (200, 50, 50), back_btn)
-            screen.blit(font.render("BACK", True, (255, 255, 255)),
-                        (back_btn.x + 10, back_btn.y + 5))
+            screen.blit(font.render("BACK", True, (255, 255, 255)), (back_btn.x + 10, back_btn.y + 5))
 
-        inventory.draw(screen,draw_hud)
+        # ---------- MESSAGES ----------
+        if application_state["message"]:
+            msg = font.render(application_state["message"], True, (255, 255, 0))
+            screen.blit(msg, (WIDTH // 2 - 100, 80))
+
+        # ---------- HUD & UPDATE ----------
+        if draw_hud:
+            draw_hud(screen)
+        inventory.draw(screen)
         pygame.display.update()

@@ -162,7 +162,7 @@ pygame.quit()
 
 # import pygame
 # from ui.inventory import Inventory
-# from floors.session_layer import run_session_layer
+# from floors.data_link_layer import run_data_layer
 
 # pygame.init()
 
@@ -171,10 +171,10 @@ pygame.quit()
 # pygame.display.set_caption("Test Application Layer")
 
 # inventory = Inventory()
-# session_state = {}
+# data_state = {}
 
 # while True:
-#     next_scene = run_session_layer(screen, inventory, session_state)
+#     next_scene = run_data_layer(screen, inventory, data_state)
 
 #     if next_scene == "presentation":
 #         print("Back to presentation (loop continues)")
