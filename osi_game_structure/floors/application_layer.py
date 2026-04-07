@@ -45,7 +45,7 @@ def play_game_over(screen):
     sys.exit()
 
 
-def run_application_layer(screen, inventory, application_state):
+def run_application_layer(screen, inventory, application_state,draw_hud=None):
 
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
@@ -158,7 +158,12 @@ def run_application_layer(screen, inventory, application_state):
                         application_state["viewing_note"] = False
                         application_state["viewing_watch"] = False
                     continue
-
+                
+                if application_state["siren_active"] and not application_state["siren_stopped"]:
+                    if siren_rect.collidepoint(event.pos):
+                        application_state["entering_siren_code"] = True
+                    # block everything else silently
+                    continue
                 inventory.handle_click(event.pos, screen)
 
                 if back_rect.collidepoint(event.pos):
@@ -257,5 +262,5 @@ def run_application_layer(screen, inventory, application_state):
             screen.blit(font.render("BACK", True, (255, 255, 255)),
                         (back_btn.x + 10, back_btn.y + 5))
 
-        inventory.draw(screen)
+        inventory.draw(screen,draw_hud)
         pygame.display.update()

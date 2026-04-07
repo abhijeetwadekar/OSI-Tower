@@ -67,19 +67,14 @@ def run_wall(screen):
         btn_color = (0,150,0) if puzzle_solved else (60,60,60)
 
         pygame.draw.rect(screen, btn_color, back_btn)
-        screen.blit(font.render("BACK", True, (255,255,255)),
+        btn_label = "DONE" if puzzle_solved else "BACK"
+        screen.blit(font.render(btn_label, True, (255,255,255)),
                     (back_btn.x+70, back_btn.y+10))
 
         note_text = font.render("Check effect after 4 hits", True, (200,200,200))
         screen.blit(note_text, (20, HEIGHT - 40))
 
-        if timer_active:
-            remaining = max(0, TIME_LIMIT - int(time.time() - start_time))
-            minutes = remaining // 60
-            seconds = remaining % 60
-            timer_text = f"{minutes:02}:{seconds:02}"
-            screen.blit(font.render(timer_text, True, (255,50,50)),
-                        (750, HEIGHT - 45))
+        
 
     # ---------- POPUPS ----------
     def draw_popup():
@@ -96,15 +91,15 @@ def run_wall(screen):
             text = font.render(line, True, (255,255,255))
             screen.blit(text, (popup_rect.x + 20, popup_rect.y + 40 + i*30))
 
-        yes_btn = pygame.Rect(250, 330, 150, 50)
-        no_btn = pygame.Rect(500, 330, 150, 50)
+        yes_btn = pygame.Rect(250, 330, 200, 50)
+        no_btn = pygame.Rect(500, 330, 200, 50)
 
         pygame.draw.rect(screen, (100,0,0), yes_btn)
         pygame.draw.rect(screen, (0,100,0), no_btn)
 
-        screen.blit(font.render("YES", True, (255,255,255)),
+        screen.blit(font.render("YES,I don't care!", True, (255,255,255)),
                     (yes_btn.x + 40, yes_btn.y + 15))
-        screen.blit(font.render("NO", True, (255,255,255)),
+        screen.blit(font.render("NO, I don't dare!", True, (255,255,255)),
                     (no_btn.x + 50, no_btn.y + 15))
 
         return yes_btn, no_btn
@@ -175,7 +170,7 @@ def run_wall(screen):
                 # BACK BUTTON → EXIT POPUP
                 if back_btn.collidepoint(event.pos):
                     pygame.mouse.set_visible(True)
-                    return puzzle_solved   # ✅ RETURN RESULT
+                    return puzzle_solved,timer_active   # ✅ RETURN RESULT
 
                 # NORMAL CLICK
                 if event.pos[1] < HEIGHT - TASKBAR_HEIGHT:

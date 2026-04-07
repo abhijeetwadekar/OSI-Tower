@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-def run_physical_layer(screen, inventory, state):   # ✅ ADDED state
+def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED state
 
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
@@ -71,7 +71,7 @@ def run_physical_layer(screen, inventory, state):   # ✅ ADDED state
         if wire_collected:
             screen.blit(hookless, wire_rect.topleft)
 
-        inventory.draw(screen)
+        inventory.draw(screen,draw_hud)
 
         
         # HINT BOX

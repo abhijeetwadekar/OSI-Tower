@@ -3,7 +3,7 @@ import sys
 from floors.physical_layer import run_physical_layer
 from game.socket_game import run_socket_game
 
-def run_data_layer(screen, inventory, physical_state, data_state):
+def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
 
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
@@ -250,7 +250,7 @@ def run_data_layer(screen, inventory, physical_state, data_state):
         if door_unlocked:
             screen.blit(pygame.transform.scale(open_door, door_rect.size), door_rect)
 
-        inventory.draw(screen)
+        inventory.draw(screen,draw_hud)
 
         # ---------- NOTE POPUP DRAW ----------
         if note_popup:

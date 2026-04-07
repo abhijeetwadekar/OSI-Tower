@@ -3,7 +3,7 @@ import sys
 from game.interface import run_interface
 from game.cardboard import run_cardbord   # ✅ popup
 
-def run_network_layer(screen, inventory, data_state, network_state):
+def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None):
 
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
@@ -302,7 +302,7 @@ def run_network_layer(screen, inventory, data_state, network_state):
             hint = hint_font.render(display_hint, True, (0,0,0))
             screen.blit(hint, (320, 65))
 
-        inventory.draw(screen)
+        inventory.draw(screen,draw_hud)
         # # ---------- HINT DISPLAY ----------
         # if network_state.get("temp_hint"):
 

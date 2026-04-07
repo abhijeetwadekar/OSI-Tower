@@ -62,7 +62,7 @@ class Inventory:
             y += 80
 
 
-    def draw(self, screen):
+    def draw(self, screen,draw_hud=None):
 
         WIDTH, HEIGHT = screen.get_size()
 
@@ -96,3 +96,6 @@ class Inventory:
             screen.blit(icon, rect.topleft)
 
             y += 80
+
+        if draw_hud:
+            draw_hud(screen, panel_x=WIDTH - 155, start_y=HEIGHT - 80)

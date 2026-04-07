@@ -3,7 +3,7 @@ import sys
 from game.pattern_game import run_pattern_game  # your popup game
 
 
-def run_presentation_layer(screen, inventory, presentation_state):
+def run_presentation_layer(screen, inventory, presentation_state,draw_hud=None):
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 35)
@@ -186,7 +186,7 @@ def run_presentation_layer(screen, inventory, presentation_state):
             hint = hint_font.render("sodium hydroxide solution", True, (0,0,0))
             screen.blit(hint, (400, 50))
 
-        inventory.draw(screen)
+        inventory.draw(screen,draw_hud)
 
         pygame.display.update()
         clock.tick(60)

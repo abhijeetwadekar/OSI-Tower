@@ -1,11 +1,10 @@
 import pygame
 import sys
+import time
 from game.laptop import run_laptop  # Assuming this is the function name
 from game.wall import run_wall    # Assuming this is the function name
 from game.server_room import run_server
 def run_stairs_transition(screen):
-    import pygame
-    import sys
 
     WIDTH, HEIGHT = screen.get_size()
 
@@ -44,7 +43,7 @@ def run_stairs_transition(screen):
                 pygame.quit()
                 sys.exit()
         clock.tick(60)
-def run_session_layer(screen, inventory, session_state):
+def run_session_layer(screen, inventory, session_state,draw_hud=None):
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 35)
@@ -75,7 +74,7 @@ def run_session_layer(screen, inventory, session_state):
     server_rect = pygame.Rect(910, 180, 100, 400)    # Area for serverdoor.png
     wall_dent_rect = pygame.Rect(535, 325, 60, 30)
     unlock_icon_rect = pygame.Rect(
-    exit_door_rect.x + 10,
+    exit_door_rect.x + 12,
     exit_door_rect.y + 30,
     100, 80
 )
@@ -146,9 +145,14 @@ def run_session_layer(screen, inventory, session_state):
                 # 7. Destructible Wall (Hammer)
                 elif destructible_wall.collidepoint(event.pos):
                     if inventory.selected_item == "wall_hammer":
-                        if run_wall(screen):
+                        result, start_timer = run_wall(screen)
+                        if result:
                             session_state["wall_solved"] = True
                             inventory.remove_item("wall_hammer")
+                        if start_timer:
+                            session_state["timer_active"] = True
+                            session_state["timer_start"] = time.time()
+
                     else:
                         session_state["temp_hint"] = "need something to break"
 
@@ -274,9 +278,9 @@ def run_session_layer(screen, inventory, session_state):
             # pygame.draw.rect(screen,(0,0,0),(300,50,500,50))
             # pygame.draw.rect(screen,(255,0,0),(300,50,500,50),2)
 
-            hint = hint_font.render(session_state["temp_hint"], True, (0,0,0))
+            hint = hint_font.render(session_state["temp_hint"], True, (255,255,255))
             screen.blit(hint, (320, 65))
 
-        inventory.draw(screen)
+        inventory.draw(screen,draw_hud)
         pygame.display.update()
         clock.tick(60)

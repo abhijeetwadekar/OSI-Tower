@@ -3,7 +3,7 @@ import sys
 
 from game.colour_game import run_colour_game
 
-def run_transport_layer(screen, inventory, transport_state):
+def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
 
     WIDTH, HEIGHT = screen.get_size()
     clock = pygame.time.Clock()
@@ -265,5 +265,10 @@ def run_transport_layer(screen, inventory, transport_state):
 
             hint = hint_font.render(display_hint, True, (0,0,0))
             screen.blit(hint, (320, 65))
+        # ---------- HUD ----------
+        if draw_hud:
+            draw_hud(screen, panel_x=WIDTH - 150, start_y=HEIGHT - 60)
+
         pygame.display.update()
         clock.tick(60)
+        
