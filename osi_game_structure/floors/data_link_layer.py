@@ -113,6 +113,7 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
     current_note = data_state["current_note"]
 
     font = pygame.font.SysFont(None, 40)
+    note_items = {"rednote", "bluenote", "greennote"}
 
     running = True
 
@@ -162,6 +163,8 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
                     back_btn = pygame.Rect(700, 100, 80, 40)
 
                     if back_btn.collidepoint(event.pos):
+                        if current_note in note_items and inventory.selected_item == current_note:
+                            inventory.selected_item = None
                         note_popup = False
                         current_note = None
 
