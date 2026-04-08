@@ -74,7 +74,7 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
     server_rect = pygame.Rect(910, 180, 100, 400)    # Area for serverdoor.png
     wall_dent_rect = pygame.Rect(535, 325, 60, 30)
     unlock_icon_rect = pygame.Rect(
-    exit_door_rect.x + 12,
+    exit_door_rect.x + 16,
     exit_door_rect.y + 30,
     100, 80
 )
@@ -90,6 +90,7 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
             "temp_hint": None,
             "loop_count": 0,
             "server_on": False,
+            "wifi_connected": False,
             "viewing_msg": False
         })
 
@@ -126,7 +127,7 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
                 elif laptop_rect.collidepoint(event.pos):
 
                     if session_state["server_on"]:   # ✅ شرط (condition)
-                        if run_laptop(screen):
+                        if run_laptop(screen,session_state):
                             session_state["laptop_solved"] = True
                     else:
                         session_state["temp_hint"] = "we need to connect server first."
@@ -166,7 +167,9 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
 
                     # Step 2: Door already placed → try entering
                     else:
-                        if inventory.selected_item == "torch":
+                        if session_state.get("server_on"):
+                            session_state["temp_hint"] = "Nothing useful in there anymore."
+                        elif inventory.selected_item == "torch":
                             if run_server(screen,session_state):
                                 session_state["server_on"] = True
                                 inventory.remove_item("torch")
