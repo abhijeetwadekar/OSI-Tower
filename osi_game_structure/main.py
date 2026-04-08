@@ -8,7 +8,7 @@ from floors.physical_layer import run_physical_layer
 from floors.data_link_layer import run_data_layer
 from floors.network_layer import run_network_layer
 from floors.transport_layer import run_transport_layer
-from floors.session_layer import run_session_layer
+from floors.session_layer import run_session_layer, run_stairs_transition
 from floors.presentation_layer import run_presentation_layer
 from floors.application_layer import run_application_layer
 
@@ -139,7 +139,7 @@ while running:
             (previous_scene == "data" and current_scene == "physical")
         )
         if not skip_transition:
-            play_stairs_transition(screen)
+            run_stairs_transition(screen)
 
     previous_scene = current_scene
 
