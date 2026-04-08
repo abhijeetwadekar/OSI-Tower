@@ -1,3 +1,5 @@
+import sys
+import atexit
 import pygame
 import time  # ← ADD THIS
 from ui.inventory import Inventory
@@ -13,12 +15,35 @@ from floors.application_layer import run_application_layer
 
 import base64
 
-def save_score(name, time_taken):
-    data = f"{name}:{time_taken}"
-    encoded = base64.b64encode(data.encode()).decode()
+def safe_exit():
+    global game_saved
 
-    with open("leaderboard.dat", "a") as file:
-        file.write(encoded + "\n")
+    print("Saving before exit...")
+
+    total_time = int(time.time() - game_start_time)
+
+    if not game_saved:
+        save_score(player_name, total_time)
+        game_saved = True
+
+    pygame.quit()
+    sys.exit()
+
+def save_score(name, time_taken):
+
+    minutes = time_taken // 60
+    seconds = time_taken % 60
+    formatted_time = f"{minutes:02}:{seconds:02}"
+
+    with open("leaderboard.txt", "a") as file:
+        file.write(f"{name} - {formatted_time}\n")
+
+# def save_score(name, time_taken):
+#     data = f"{name}:{time_taken}"
+#     encoded = base64.b64encode(data.encode()).decode()
+
+#     with open("leaderboard.dat", "a") as file:
+#         file.write(encoded + "\n")
 
 pygame.init()
 
@@ -113,7 +138,14 @@ current_scene = "physical"
 previous_scene = None
 running = True
 
+game_saved = False
+
+atexit.register(lambda: save_score(player_name, int(time.time() - game_start_time)))
+
 while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            safe_exit()
 
     if previous_scene and current_scene != previous_scene:
         skip_transition = (
@@ -154,11 +186,13 @@ while running:
 
     elif current_scene == "game_over":
 
-        print("GAME OVER TRIGGERED")   # debug
+        print("GAME OVER TRIGGERED")
 
         total_time = int(time.time() - game_start_time)
 
-        save_score(player_name, total_time)
+        if not game_saved:
+            save_score(player_name, total_time)
+            game_saved = True
 
         from floors.application_layer import play_game_over
         play_game_over(screen, player_name, total_time)
@@ -171,85 +205,6 @@ while running:
 
     pygame.display.update()
 
+
+
 pygame.quit()
-
-# ==================================================================================
-# 🔧 DEBUG MODE: RUN APPLICATION LAYER ONLY (KEEP COMMENTED)
-# ==================================================================================
-
-# import pygame
-# from ui.inventory import Inventory
-# from floors.data_link_layer import run_data_layer
-
-# pygame.init()
-
-# WIDTH, HEIGHT = 1152, 768
-# screen = pygame.display.set_mode((WIDTH, HEIGHT))
-# pygame.display.set_caption("Test Application Layer")
-
-# inventory = Inventory()
-# data_state = {}
-
-# while True:
-#     next_scene = run_data_layer(screen, inventory, data_state)
-
-#     if next_scene == "presentation":
-#         print("Back to presentation (loop continues)")
-
-#     elif next_scene == "underground":
-#         print("Going underground (test loop continues)")
-
-#     elif next_scene == "quit":
-#         break
-
-# import pygame
-# import time
-# from ui.inventory import Inventory
-# from floors.application_layer import run_application_layer, play_game_over
-
-# pygame.init()
-
-# WIDTH, HEIGHT = 1152, 768
-# screen = pygame.display.set_mode((WIDTH, HEIGHT))
-# pygame.display.set_caption("Test Application Layer")
-
-# inventory = Inventory()
-# application_state = {}
-
-# # ⏱ start timer manually for testing
-# game_start_time = time.time()
-
-# def dummy_hud(surface):
-#     pass  # we don’t need HUD for testing
-
-# running = True
-
-# while running:
-
-#     next_scene = run_application_layer(
-#         screen,
-#         inventory,
-#         application_state,
-#         dummy_hud
-#     )
-
-#     # 🎯 HANDLE GAME OVER
-#     if next_scene == "game_over":
-#         total_time = int(time.time() - game_start_time)
-
-#         player_name = "TEST_PLAYER"  # you can change this
-
-#         print("GAME OVER TEST")
-#         print(player_name, total_time)
-
-#         play_game_over(screen, player_name, total_time)
-
-#         running = False
-
-#     elif next_scene == "presentation":
-#         print("Back to presentation")
-
-#     elif next_scene == "quit":
-#         break
-
-# pygame.quit()
