@@ -1,9 +1,21 @@
 import pygame
 import sys
 
-def run_underground(screen, inventory):
+def run_underground(screen, inventory,application_state):
 
     WIDTH, HEIGHT = screen.get_size()
+    stairs1_img = pygame.transform.scale(
+        pygame.image.load("assets/stairs.jpg"), (WIDTH, HEIGHT))
+    stairs2_img = pygame.transform.scale(
+        pygame.image.load("assets/stairs1.jpg"), (WIDTH, HEIGHT))
+    
+    screen.blit(stairs1_img, (0, 0))
+    pygame.display.update()
+    pygame.time.delay(500)
+    
+    screen.blit(stairs2_img, (0, 0))
+    pygame.display.update()
+    pygame.time.delay(500)
     clock = pygame.time.Clock()
 
     bg = pygame.image.load("assets/godown.png")
@@ -20,6 +32,15 @@ def run_underground(screen, inventory):
     replace_img = None
 
     running = True
+    show_image = application_state["axe_replaced"]  # ← restores on re-entry
+
+    replace_img = None
+    if show_image:  # pre-load image if axe was already collected before
+        try:
+            replace_img = pygame.image.load("assets/empty.png")
+            replace_img = pygame.transform.scale(replace_img, hitbox2.size)
+        except:
+            pass
     while running:
 
         screen.blit(bg, (0,0))
@@ -38,11 +59,10 @@ def run_underground(screen, inventory):
                 # ---------- HITBOX 2 → COLLECT AXE ----------
                 if hitbox2.collidepoint(event.pos):
 
-                    if not axe_collected:
-                        axe_collected = True
-                        inventory.add_item("axe")   # 🔥 important
-
-                        # optional image after click
+                    if not application_state["axe_collected"]:  # use state instead
+                        application_state["axe_collected"] = True
+                        application_state["axe_replaced"] = True
+                        inventory.add_item("axe")
                         try:
                             replace_img = pygame.image.load("assets/empty.png")
                             replace_img = pygame.transform.scale(replace_img, hitbox2.size)
