@@ -1,5 +1,6 @@
 import pygame
 import time  # ← ADD THIS
+import atexit
 from ui.inventory import Inventory
 from ui.start_menu import run_start_menu
 
@@ -19,6 +20,28 @@ def save_score(name, time_taken):
 
     with open("leaderboard.dat", "a") as file:
         file.write(encoded + "\n")
+
+
+player_name = None
+score_saved = False
+
+
+def save_score_once():
+    global score_saved
+
+    if score_saved:
+        return None
+
+    if not player_name or game_start_time is None:
+        return None
+
+    total_time = int(time.time() - game_start_time)
+    save_score(player_name, total_time)
+    score_saved = True
+    return total_time
+
+
+atexit.register(save_score_once)
 
 pygame.init()
 
@@ -101,6 +124,14 @@ previous_scene = None
 running = True
 
 while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            print("Window closed → saving...")
+
+            save_score_once()   # ✅ FORCE SAVE
+
+            pygame.quit()
+            exit()
 
     if previous_scene and current_scene != previous_scene:
         skip_transition = (
@@ -143,9 +174,9 @@ while running:
 
         print("GAME OVER TRIGGERED")   # debug
 
-        total_time = int(time.time() - game_start_time)
-
-        save_score(player_name, total_time)
+        total_time = save_score_once()
+        if total_time is None:
+            total_time = int(time.time() - game_start_time)
 
         from floors.application_layer import play_game_over
         play_game_over(screen, player_name, total_time)
