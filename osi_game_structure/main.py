@@ -152,29 +152,22 @@ while running:
     elif current_scene == "application":
         current_scene = run_application_layer(screen, inventory, game_state["application"],draw_hud)
 
-    elif current_scene == "quit":
+    elif current_scene == "game_over":
 
-        print("GAME OVER TRIGGERED") 
-    
-        # ⏱ STOP TIMER
+        print("GAME OVER TRIGGERED")   # debug
+
         total_time = int(time.time() - game_start_time)
 
-        # 💾 SAVE DATA
         save_score(player_name, total_time)
 
-        print(f"Saved: {player_name} - {total_time} seconds")
-
-        # 🎬 PLAY VIDEO
         from floors.application_layer import play_game_over
-        play_game_over(screen)
+        play_game_over(screen, player_name, total_time)
 
         running = False
 
     # -------- DRAW HUD ON TOP --------   # ← ADD THIS
-    result = draw_hud(screen)
-    if result == "game_over":
-        from floors.application_layer import play_game_over
-        play_game_over(screen)
+    # result = 
+    draw_hud(screen)
 
     pygame.display.update()
 
@@ -209,30 +202,52 @@ pygame.quit()
 #     elif next_scene == "quit":
 #         break
 
-# pygame.quit()
-
-
 # import pygame
+# import time
 # from ui.inventory import Inventory
-# from floors.transport_layer import run_transport_layer
+# from floors.application_layer import run_application_layer, play_game_over
 
 # pygame.init()
 
 # WIDTH, HEIGHT = 1152, 768
 # screen = pygame.display.set_mode((WIDTH, HEIGHT))
-# pygame.display.set_caption("Test Transport Layer")
+# pygame.display.set_caption("Test Application Layer")
 
 # inventory = Inventory()
-# transport_state = {}
+# application_state = {}
 
-# while True:
-#     next_scene = run_transport_layer(screen, inventory, transport_state)
+# # ⏱ start timer manually for testing
+# game_start_time = time.time()
 
-#     if next_scene == "session":
-#         print("Going to session layer (loop continues)")
+# def dummy_hud(surface):
+#     pass  # we don’t need HUD for testing
 
-#     elif next_scene == "network":
-#         print("Back to network layer (loop continues)")
+# running = True
+
+# while running:
+
+#     next_scene = run_application_layer(
+#         screen,
+#         inventory,
+#         application_state,
+#         dummy_hud
+#     )
+
+#     # 🎯 HANDLE GAME OVER
+#     if next_scene == "game_over":
+#         total_time = int(time.time() - game_start_time)
+
+#         player_name = "TEST_PLAYER"  # you can change this
+
+#         print("GAME OVER TEST")
+#         print(player_name, total_time)
+
+#         play_game_over(screen, player_name, total_time)
+
+#         running = False
+
+#     elif next_scene == "presentation":
+#         print("Back to presentation")
 
 #     elif next_scene == "quit":
 #         break

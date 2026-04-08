@@ -6,7 +6,10 @@ from game.safe import run_safe_game
 from game.underground import run_underground
 
 
-def play_game_over(screen):
+def play_game_over(screen, player_name, total_time):
+    minutes = total_time // 60
+    seconds = total_time % 60
+    time_text = f"{minutes:02}:{seconds:02}"
     cap = cv2.VideoCapture("assets/game_over.mp4")
     clock = pygame.time.Clock()
 
@@ -47,8 +50,20 @@ def play_game_over(screen):
         end_img.fill((0, 0, 0))
 
     # Static loop to keep the end screen visible
+    font_big = pygame.font.SysFont(None, 60)
     while True:
         screen.blit(end_img, (0, 0))
+        # BLACK COLOR
+        name_surface = font_big.render(f"Player: {player_name}", True, (0,0,0))
+        time_surface = font_big.render(f"Time: {time_text}", True, (0,0,0))
+
+        # CENTER ALIGN
+        name_rect = name_surface.get_rect(center=(screen.get_width()//2, 250))
+        time_rect = time_surface.get_rect(center=(screen.get_width()//2, 350))
+
+        screen.blit(name_surface, name_rect)
+        screen.blit(time_surface, time_rect)
+
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -230,7 +245,7 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
                             application_state["message"] = "Glass is sealed pack!"
                             application_state["message_timer"] = 1000
                     else:
-                        play_game_over(screen)
+                        return "game_over"
 
         # ---------- DRAWING ----------
         screen.blit(bg, (0, 0))
