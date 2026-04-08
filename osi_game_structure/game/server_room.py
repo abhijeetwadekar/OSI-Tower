@@ -22,7 +22,7 @@ def run_server(screen,session_state):
     )
 
     # ---------- CENTER DOOR (BACK TO SESSION) ----------
-    door_rect = pygame.Rect(WIDTH//2 , HEIGHT//2 - 120, 120, 240)
+    door_rect = pygame.Rect(330 , 170, 120, 300)
 
     # ---------- STATE ----------
     lights_on = session_state.get("server_on", False)
@@ -66,7 +66,7 @@ def run_server(screen,session_state):
             screen.blit(switch_img, (switch_rect.x, switch_rect.y))
 
         # ---------- OPTIONAL: DEBUG DOOR ----------
-        pygame.draw.rect(screen, (255,0,0), door_rect, 2)
+        # pygame.draw.rect(screen, (255,0,0), door_rect, 2)
 
         # ---------- CURSOR ----------
         pygame.draw.circle(screen, (255,255,255), (mx, my), 3)
