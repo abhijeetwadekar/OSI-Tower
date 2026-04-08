@@ -135,6 +135,7 @@ while running:
 
     if previous_scene and current_scene != previous_scene:
         skip_transition = (
+            current_scene == "game_over" or
             (previous_scene == "physical" and current_scene == "data") or
             (previous_scene == "data" and current_scene == "physical")
         )

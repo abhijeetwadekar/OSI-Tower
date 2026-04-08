@@ -109,7 +109,7 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
 
                 # ---------- POPUPS ----------
                 if blueprint_popup:
-                    if pygame.Rect(650,100,300,140).collidepoint(event.pos):
+                    if pygame.Rect(650,100,400,300).collidepoint(event.pos):
 
                         blueprint_popup = False
                     continue
@@ -208,7 +208,7 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
 
         # ---------- POPUPS ----------
         if blueprint_popup:
-            screen.blit(pygame.transform.scale(blueprint_img,(300,400)),(200,150))
+            screen.blit(pygame.transform.scale(blueprint_img,(500,700)),(200,0))
             pygame.draw.rect(screen,(200,50,50),(650,100,100,40))
             screen.blit(font.render("BACK",True,(255,255,255)),(660,110))
 
@@ -263,7 +263,7 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
             # pygame.draw.rect(screen, (0,0,0), (300, 50, 500, 50))
             # pygame.draw.rect(screen, (255,0,0), (300, 50, 500, 50), 2)
 
-            hint = hint_font.render(display_hint, True, (0,0,0))
+            hint = hint_font.render(display_hint, True, (255,255,255))
             screen.blit(hint, (320, 65))
         # ---------- HUD ----------
         if draw_hud:

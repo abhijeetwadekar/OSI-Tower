@@ -302,7 +302,7 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
 
         # ---------- MESSAGES ----------
         if application_state["message"]:
-            msg = font.render(application_state["message"], True, (255, 255, 0))
+            msg = font.render(application_state["message"], True, (255, 255, 255))
             screen.blit(msg, (WIDTH // 2 - 100, 80))
 
         # ---------- HUD & UPDATE ----------
