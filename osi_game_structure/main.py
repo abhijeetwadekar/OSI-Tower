@@ -1,6 +1,8 @@
 import pygame
 import time  # ← ADD THIS
 import atexit
+import os
+import signal
 from ui.inventory import Inventory
 from ui.start_menu import run_start_menu
 
@@ -14,34 +16,98 @@ from floors.application_layer import run_application_layer
 
 import base64
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SCORE_FILE = os.path.join(BASE_DIR, "leaderboard.dat")
+
+player_name = None
+score_saved = False
+game_start_time = None
+
+# Keep a reference so Windows does not garbage collect the callback.
+_windows_console_handler_ref = None
+
 def save_score(name, time_taken):
     data = f"{name}:{time_taken}"
     encoded = base64.b64encode(data.encode()).decode()
 
-    with open("leaderboard.dat", "a") as file:
+    with open(SCORE_FILE, "a", encoding="utf-8") as file:
         file.write(encoded + "\n")
+        file.flush()
+        os.fsync(file.fileno())
 
-
-player_name = None
-score_saved = False
-
-
-def save_score_once():
+def save_score_once(force=False):
     global score_saved
 
     if score_saved:
         return None
 
-    if not player_name or game_start_time is None:
-        return None
+    if game_start_time is None:
+        if not force:
+            return None
+        total_time = 0
+    else:
+        total_time = int(time.time() - game_start_time)
 
-    total_time = int(time.time() - game_start_time)
-    save_score(player_name, total_time)
+    name_to_save = player_name if player_name else "Unknown"
+    save_score(name_to_save, total_time)
     score_saved = True
     return total_time
 
 
+def _graceful_shutdown(signum, frame):
+    save_score_once(force=True)
+    pygame.quit()
+    raise SystemExit(0)
+
+
+def _register_signal_handlers():
+    for sig_name in ("SIGINT", "SIGTERM", "SIGBREAK"):
+        sig = getattr(signal, sig_name, None)
+        if sig is not None:
+            try:
+                signal.signal(sig, _graceful_shutdown)
+            except (OSError, ValueError):
+                pass
+
+
+def _register_windows_console_close_handler():
+    global _windows_console_handler_ref
+
+    if os.name != "nt":
+        return
+
+    try:
+        import ctypes
+        from ctypes import wintypes
+    except Exception:
+        return
+
+    CTRL_CLOSE_EVENT = 2
+    CTRL_LOGOFF_EVENT = 5
+    CTRL_SHUTDOWN_EVENT = 6
+
+    HANDLER_ROUTINE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.DWORD)
+
+    @HANDLER_ROUTINE
+    def _console_handler(ctrl_type):
+        if ctrl_type in (CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT):
+            try:
+                save_score_once(force=True)
+            except Exception:
+                pass
+        return False
+
+    try:
+        ok = ctypes.windll.kernel32.SetConsoleCtrlHandler(_console_handler, True)
+        if ok:
+            _windows_console_handler_ref = _console_handler
+    except Exception:
+        pass
+
+
 atexit.register(save_score_once)
+_register_signal_handlers()
+_register_windows_console_close_handler()
 
 pygame.init()
 
@@ -70,7 +136,7 @@ game_state = {
 }
 
 # ---------- TIMER STATE ----------        # ← ADD THIS BLOCK
-game_start_time = None                     # starts after start menu
+# starts after start menu
 countdown_active = False                   # wall puzzle triggered
 countdown_start = None
 COUNTDOWN_LIMIT = 420                      # 7 minutes
@@ -128,7 +194,7 @@ while running:
         if event.type == pygame.QUIT:
             print("Window closed → saving...")
 
-            save_score_once()   # ✅ FORCE SAVE
+            save_score_once(force=True)   # ✅ FORCE SAVE
 
             pygame.quit()
             exit()
