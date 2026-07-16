@@ -24,6 +24,70 @@ def run_start_menu(screen):
     zoom_scale = 1.0
     zooming = False
     show_guide = False
+    guide_scroll_offset = 0
+    guide_content = [
+        "OSI TOWER GUIDE",
+        "Welcome to OSI Tower",
+        "",
+        "You are trapped inside the mysterious OSI Tower, a seven-floor",
+        "castle where each floor represents one layer of the OSI",
+        "(Open Systems Interconnection) Model.",
+        "",
+        "Your mission is simple:",
+        "",
+        "Escape the tower by solving puzzles based on networking concepts",
+        "while learning how computer networks communicate.",
+        "",
+        "=== OBJECTIVE ===",
+        "",
+        "- Start from the Physical Layer at the top of the tower.",
+        "- Solve the puzzle on each floor.",
+        "- Find a way out.",
+        "",
+        "Every puzzle teaches the purpose of an OSI layer.",
+        "",
+        "=== CONTROLS ===",
+        "",
+        "Left Click - Interact with objects",
+        "Click & Drag - Use collected items when required",
+        "",
+        "=== INVENTORY ===",
+        "",
+        "Items collected during the game are stored in the",
+        "Inventory Panel.",
+        "",
+        "Some items can be used immediately, while others may be",
+        "useful later in the level.",
+        "",
+        "Choose the correct item to solve each puzzle.",
+        "",
+        "Information or clue about certain things may appear",
+        "if relevant.",
+        "",
+        "=== LEARN WHILE YOU PLAY ===",
+        "",
+        "After completing each floor, you'll receive a",
+        "Learning Card explaining:",
+        "",
+        "- Concept: How the puzzle relates to networking.",
+        "- What You Learned: The purpose of that OSI layer.",
+        "- Real World Examples: Everyday devices and",
+        "  technologies that use it.",
+        "",
+        "=== REMEMBER ===",
+        "",
+        "- There is always a logical solution.",
+        "- Observe carefully.",
+        "- Think like a network engineer.",
+        "- Every puzzle represents a real networking concept.",
+        "",
+        "=== GOOD LUCK! ===",
+        "",
+        "The tower can only be escaped by understanding how",
+        "networks communicate.",
+        "",
+        "Learn. Solve. Escape.",
+    ]
 
     # ✅ POPUP STATE
     entering_name = False
@@ -91,30 +155,61 @@ def run_start_menu(screen):
 
             screen.fill((20,20,30))
 
+            # Title
             title = title_font.render("GAME GUIDE",True,GOLD)
-            screen.blit(title,title.get_rect(center=(WIDTH//2,120)))
+            screen.blit(title,title.get_rect(center=(WIDTH//2,50)))
 
-            guide_lines = [
-                "Escape the OSI Tower by solving puzzles on each layer.",
-                "Each floor represents a networking layer.",
-                "",
-                "Collect items and use them to solve puzzles.",
-                "Combine clues to move to the next layer.",
-                "",
-                "Layers:",
-                "Physical → Data Link → Network → Transport → "
-                " Session → Presentation → Application"
-            ]
+            # Scroll area dimensions
+            scroll_area_top = 150
+            scroll_area_height = HEIGHT - 250
+            scroll_area_left = 100
+            scroll_area_width = WIDTH - 200
 
-            y = 250
-            for line in guide_lines:
-                text = text_font.render(line,True,WHITE)
-                screen.blit(text,(WIDTH//2-350,y))
-                y += 40
+            # Draw scrollable content
+            guide_surface = pygame.Surface((scroll_area_width, scroll_area_height))
+            guide_surface.fill((30,30,40))
 
+            y_pos = 20
+            for line in guide_content:
+                if line.startswith("==="):
+                    # Section header
+                    text = text_font.render(line, True, GOLD)
+                elif line == "":
+                    # Empty line - just space
+                    y_pos += 20
+                    continue
+                else:
+                    # Regular text
+                    text = text_font.render(line, True, WHITE)
+                
+                # Apply scroll offset
+                render_y = y_pos - guide_scroll_offset
+                if -text.get_height() < render_y < scroll_area_height:
+                    guide_surface.blit(text, (10, render_y))
+                
+                y_pos += 35
+
+            # Calculate max scroll
+            total_content_height = len(guide_content) * 35
+            max_scroll = max(0, total_content_height - scroll_area_height)
+
+            # Draw scroll area border
+            pygame.draw.rect(screen, WHITE, (scroll_area_left, scroll_area_top, scroll_area_width, scroll_area_height), 2)
+            screen.blit(guide_surface, (scroll_area_left, scroll_area_top))
+
+            # Draw scrollbar
+            if max_scroll > 0:
+                scrollbar_height = int((scroll_area_height / total_content_height) * scroll_area_height)
+                scrollbar_y = scroll_area_top + int((guide_scroll_offset / max_scroll) * (scroll_area_height - scrollbar_height))
+                pygame.draw.rect(screen, GOLD, (scroll_area_left + scroll_area_width + 5, scrollbar_y, 8, scrollbar_height))
+
+            # Scroll instructions
+            scroll_hint = text_font.render("Scroll: UP/DOWN arrows or Mouse Wheel", True, (150,150,150))
+            screen.blit(scroll_hint, scroll_hint.get_rect(center=(WIDTH//2, HEIGHT - 80)))
+
+            # Back button
             pygame.draw.rect(screen,BOX,back_button)
             pygame.draw.rect(screen,WHITE,back_button,2)
-
             back_text = text_font.render("BACK",True,WHITE)
             screen.blit(back_text,back_text.get_rect(center=back_button.center))
 
@@ -159,6 +254,15 @@ def run_start_menu(screen):
 
                     if back_button.collidepoint(event.pos):
                         show_guide = False
+                    
+                    # Mouse wheel scroll
+                    elif event.button == 4:  # scroll up
+                        guide_scroll_offset = max(0, guide_scroll_offset - 50)
+                    elif event.button == 5:  # scroll down
+                        scroll_area_height = HEIGHT - 250
+                        total_content_height = len(guide_content) * 35
+                        max_scroll = max(0, total_content_height - scroll_area_height)
+                        guide_scroll_offset = min(max_scroll, guide_scroll_offset + 50)
 
             # ---------------- KEYBOARD ----------------
             if entering_name and event.type == pygame.KEYDOWN:
@@ -174,5 +278,16 @@ def run_start_menu(screen):
                 else:
                     if len(player_name) < 12:
                         player_name += event.unicode
+
+            # Guide scrolling with arrow keys
+            if show_guide and event.type == pygame.KEYDOWN:
+                scroll_area_height = HEIGHT - 250
+                total_content_height = len(guide_content) * 35
+                max_scroll = max(0, total_content_height - scroll_area_height)
+                
+                if event.key == pygame.K_UP:
+                    guide_scroll_offset = max(0, guide_scroll_offset - 50)
+                elif event.key == pygame.K_DOWN:
+                    guide_scroll_offset = min(max_scroll, guide_scroll_offset + 50)
 
     return player_name
