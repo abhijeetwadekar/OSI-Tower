@@ -351,10 +351,12 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
             screen.blit(txt,(340,510))
 
             pygame.draw.rect(screen,(200,0,0),(600,160,30,30))
+            close_txt = font.render("X", True, (255,255,255))
+            screen.blit(close_txt, (605, 165))
         # ---------- DRAW TEMP HINT ----------
         if data_state.get("temp_hint"):
             hint_font = pygame.font.SysFont(None, 30)
-            hint = hint_font.render(data_state["temp_hint"], True, (0,0,0))
+            hint = hint_font.render(data_state["temp_hint"], True, (255,255,0))
             screen.blit(hint, (300, 50))
         pygame.display.update()
         clock.tick(60)

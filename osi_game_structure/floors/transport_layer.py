@@ -93,7 +93,7 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
     def check_final():
         for i in range(5):
             for j in range(5):
-                if target[i][j] == 1 and final_grid[i][j] != 1:
+                if target[i][j] != final_grid[i][j]:
                     return False
         return True
 

@@ -26,7 +26,6 @@ def run_start_menu(screen):
     show_guide = False
     guide_scroll_offset = 0
     guide_content = [
-        "OSI TOWER GUIDE",
         "Welcome to OSI Tower",
         "",
         "You are trapped inside the mysterious OSI Tower, a seven-floor",

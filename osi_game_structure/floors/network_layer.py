@@ -95,6 +95,12 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
 
     while True:
 
+        # ---------- HINT TIMER ----------
+        if network_state["hint_timer"] > 0:
+            network_state["hint_timer"] -= 1
+        else:
+            network_state["temp_hint"] = None
+
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -214,7 +220,7 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
                     elif pc_connected and not pc_on:
                         pc_on = True
                     elif pc_on:
-                        if run_interface(wire_fixed):
+                        if run_interface(screen, wire_fixed, network_state):
                             wifi_done = True
 
                 elif door_rect.collidepoint(event.pos):

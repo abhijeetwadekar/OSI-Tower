@@ -269,11 +269,6 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
         # Server Door - WHITE
         # pygame.draw.rect(screen, (255, 255, 255), server_rect, 2)
 
-        # ---------- INVENTORY ITEM HINT ----------
-        if inventory.selected_item:
-            item_name = inventory.selected_item.replace("_", " ")
-            session_state["temp_hint"] = item_name
-
         # ---------- DRAW HINT ----------
         if session_state.get("temp_hint"):
             hint_font = pygame.font.SysFont(None, 32)
