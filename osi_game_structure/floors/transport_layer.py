@@ -48,6 +48,8 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
 
     tick_img = pygame.image.load("assets/tickmark.png")
     open_door = pygame.image.load("assets/openeddoor4.jpg")
+    t_info_img = pygame.image.load("assets/t_info.png")
+    t_info_img = pygame.transform.scale(t_info_img, (WIDTH, HEIGHT))
 
     font = pygame.font.SysFont(None, 30)
 
@@ -65,6 +67,7 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
             
             "unlock_popup": False,
             "door_opened": False,
+            "t_info_shown": False,
             "final_grid": [[0]*5 for _ in range(5)]
         })
 
@@ -80,6 +83,8 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
 
     unlock_popup = transport_state["unlock_popup"]
     door_opened = transport_state["door_opened"]
+    t_info_shown = transport_state.get("t_info_shown", False)
+    show_t_info = False
     final_grid = transport_state["final_grid"]
 
     target = [
@@ -106,6 +111,10 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if show_t_info:
+                    transport_state["t_info_shown"] = t_info_shown
+                    transport_state.update(locals())
+                    return "session"
 
                 # ---------- POPUPS ----------
                 if blueprint_popup:
@@ -168,8 +177,12 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
                         # transport_state["temp_hint"] = "Another color puzzle! isn't it look similar?"
 
                     elif door_opened:
-                        transport_state.update(locals())
-                        return "session"
+                        if not t_info_shown:
+                            show_t_info = True
+                            t_info_shown = True
+                        else:
+                            transport_state.update(locals())
+                            return "session"
 
         # ---------- DRAW ----------
         screen.blit(bg,(0,0))
@@ -205,6 +218,11 @@ def run_transport_layer(screen, inventory, transport_state,draw_hud=None):
 
         if door_opened:
             screen.blit(pygame.transform.scale(open_door,door_rect.size),door_rect)
+
+        inventory.draw(screen,draw_hud)
+
+        if show_t_info:
+            screen.blit(t_info_img, (0, 0))
 
         # ---------- POPUPS ----------
         if blueprint_popup:

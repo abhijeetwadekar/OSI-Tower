@@ -50,6 +50,8 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
 
     open_door = pygame.image.load("assets/openeddoor3.png")
     open_door = pygame.transform.scale(open_door, door_rect.size)
+    n_info_img = pygame.image.load("assets/n_info.png")
+    n_info_img = pygame.transform.scale(n_info_img, (GAME_WIDTH, HEIGHT))
 
     red_light = pygame.image.load("assets/redlight.png")
     yellow_light = pygame.image.load("assets/yellowlight.png")
@@ -71,6 +73,7 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
             "wifi_done": False,
             "door_popup": False,
             "entered_ip": "",
+            "door_info_shown": False,
             "door_unlocked": False,
             "temp_hint": None,
             "hint_timer": 0,
@@ -92,6 +95,8 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
     door_unlocked = network_state["door_unlocked"]
     notice_open = network_state["notice_open"]
     cardboard_items = network_state["cardboard_items"]
+    door_info_shown = network_state.get("door_info_shown", False)
+    show_door_info = False
 
     while True:
 
@@ -108,6 +113,21 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if show_door_info:
+                    network_state["items_collected"] = items_collected
+                    network_state["wire_fixed"] = wire_fixed
+                    network_state["server1_done"] = server1_done
+                    network_state["server2_done"] = server2_done
+                    network_state["pc_connected"] = pc_connected
+                    network_state["pc_on"] = pc_on
+                    network_state["wifi_done"] = wifi_done
+                    network_state["door_popup"] = door_popup
+                    network_state["entered_ip"] = entered_ip
+                    network_state["door_unlocked"] = door_unlocked
+                    network_state["notice_open"] = notice_open
+                    network_state["door_info_shown"] = door_info_shown
+                    network_state["cardboard_items"] = cardboard_items
+                    return "transport"
 
                 # ---------- NOTICE ----------
                 if notice_open:
@@ -165,6 +185,7 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
                     network_state["entered_ip"] = entered_ip
                     network_state["door_unlocked"] = door_unlocked
                     network_state["notice_open"] = notice_open
+                    network_state["door_info_shown"] = door_info_shown
                     network_state["cardboard_items"] = cardboard_items
 
                     return "data"
@@ -225,22 +246,26 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
 
                 elif door_rect.collidepoint(event.pos):
                     if door_unlocked:
+                        if not door_info_shown:
+                            show_door_info = True
+                            door_info_shown = True
+                            network_state["door_info_shown"] = True
+                        else:
+                            # 🔥 SAVE STATE HERE (VERY IMPORTANT)
+                            network_state["items_collected"] = items_collected
+                            network_state["wire_fixed"] = wire_fixed
+                            network_state["server1_done"] = server1_done
+                            network_state["server2_done"] = server2_done
+                            network_state["pc_connected"] = pc_connected
+                            network_state["pc_on"] = pc_on
+                            network_state["wifi_done"] = wifi_done
+                            network_state["door_popup"] = door_popup
+                            network_state["entered_ip"] = entered_ip
+                            network_state["door_unlocked"] = door_unlocked
+                            network_state["notice_open"] = notice_open
+                            network_state["cardboard_items"] = cardboard_items
 
-                        # 🔥 SAVE STATE HERE (VERY IMPORTANT)
-                        network_state["items_collected"] = items_collected
-                        network_state["wire_fixed"] = wire_fixed
-                        network_state["server1_done"] = server1_done
-                        network_state["server2_done"] = server2_done
-                        network_state["pc_connected"] = pc_connected
-                        network_state["pc_on"] = pc_on
-                        network_state["wifi_done"] = wifi_done
-                        network_state["door_popup"] = door_popup
-                        network_state["entered_ip"] = entered_ip
-                        network_state["door_unlocked"] = door_unlocked
-                        network_state["notice_open"] = notice_open
-                        network_state["cardboard_items"] = cardboard_items
-
-                        return "transport"
+                            return "transport"
                     elif wire_fixed and pc_connected and server1_done and server2_done and wifi_done:
                         door_popup = True
 
@@ -309,6 +334,10 @@ def run_network_layer(screen, inventory, data_state, network_state,draw_hud=None
             screen.blit(hint, (320, 65))
 
         inventory.draw(screen,draw_hud)
+
+        if show_door_info:
+            screen.blit(n_info_img, (0, 0))
+
         # # ---------- HINT DISPLAY ----------
         # if network_state.get("temp_hint"):
 

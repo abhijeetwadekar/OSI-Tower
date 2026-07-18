@@ -62,6 +62,8 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
     wall_dent_img = pygame.image.load("assets/wall_dent.png")
     opened_door_img = pygame.image.load("assets/openeddoor5.png")
     unlocked_img = pygame.image.load("assets/unlocked.png")
+    s_info_img = pygame.image.load("assets/s_info.png")
+    s_info_img = pygame.transform.scale(s_info_img, (WIDTH, HEIGHT))
 
     # ---------- RECTS (HITBOXES) ----------
     torch_rect = pygame.Rect(200, 390, 50, 40)        # Extreme left
@@ -91,8 +93,12 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
             "loop_count": 0,
             "server_on": False,
             "wifi_connected": False,
-            "viewing_msg": False
+            "viewing_msg": False,
+            "s_info_shown": False
         })
+
+    s_info_shown = session_state.get("s_info_shown", False)
+    show_s_info = False
 
     while True:
         screen.blit(bg, (0, 0))
@@ -104,6 +110,10 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if show_s_info:
+                    session_state["s_info_shown"] = s_info_shown
+                    return "presentation"
+
                 # 1. Close Server Message
                 if session_state["viewing_msg"]:
                     back_btn = pygame.Rect(WIDTH//2 - 50, HEIGHT - 100, 100, 40)
@@ -189,8 +199,12 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
 
                     if session_state["laptop_solved"]:
                         if session_state["wall_solved"]:
-                            session_state["temp_hint"] = "you broke the loop"
-                            return "presentation"
+                            if not s_info_shown:
+                                show_s_info = True
+                                s_info_shown = True
+                            else:
+                                session_state["temp_hint"] = "you broke the loop"
+                                return "presentation"
                         else:
                             session_state["loop_count"] += 1
 
@@ -287,5 +301,9 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
             screen.blit(hint, (320, 65))
 
         inventory.draw(screen,draw_hud)
+
+        if show_s_info:
+            screen.blit(s_info_img, (0, 0))
+
         pygame.display.update()
         clock.tick(60)

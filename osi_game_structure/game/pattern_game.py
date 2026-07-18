@@ -79,7 +79,7 @@ def run_pattern_game(screen):
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 # ---------- BACK BUTTON ----------
-                if back_btn.collidepoint(event.pos):
+                if back_btn.collidepoint(event.pos) and not show_popup:
                     return False   # go back to presentation layer
 
                 if not show_popup:

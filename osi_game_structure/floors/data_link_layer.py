@@ -60,6 +60,8 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
 
     socket_img = pygame.image.load("assets/socket.png")
     open_door = pygame.image.load("assets/openeddoor.jpg")
+    d_info_img = pygame.image.load("assets/d_info.png")
+    d_info_img = pygame.transform.scale(d_info_img, (WIDTH, HEIGHT))
 
     # 🔥 NOTE IMAGE (used for all notes)
     note_img = pygame.image.load("assets/note.jpeg")
@@ -83,7 +85,8 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
         "hint_timer": 0,
         "door_popup": False,
         "note_popup": False,
-        "current_note": None   # 🔥 which note is open
+        "current_note": None,  # 🔥 which note is open
+        "d_info_shown": False,
     }
 
     if not data_state:
@@ -111,10 +114,12 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
 
     note_popup = data_state["note_popup"]
     current_note = data_state["current_note"]
+    d_info_shown = data_state.get("d_info_shown", False)
 
     font = pygame.font.SysFont(None, 40)
     note_items = {"rednote", "bluenote", "greennote"}
 
+    show_d_info = False
     running = True
 
     while running:
@@ -131,6 +136,11 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if show_d_info:
+                    data_state["d_info_shown"] = d_info_shown
+                    data_state.update(locals())
+                    return "network"
+
                 # ---------- TRAP ----------
                 if trap_rect.collidepoint(event.pos):
 
@@ -259,17 +269,23 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
 
                 elif door_rect.collidepoint(event.pos):
                     if door_unlocked:
-                        data_state.update(locals())
-                        return "network"
+                        if not d_info_shown:
+                            show_d_info = True
+                            d_info_shown = True
+                        else:
+                            data_state.update(locals())
+                            return "network"
                     else:
                         door_popup = True
 
         # ---------- DRAW ----------
         screen.blit(bg, (0, 0))
 
-        # pygame.draw.rect(screen, (255,0,0), door_rect, 2)
-        # pygame.draw.rect(screen, (255,255,0), notice_rect, 2)
-        # pygame.draw.rect(screen, (255,0,0), trap_rect, 2)
+        # debug outlines for hitboxes
+        # pygame.draw.rect(screen, (255, 0, 0), hole_rect, 2)
+        # pygame.draw.rect(screen, (0, 255, 0), door_rect, 2)
+        # pygame.draw.rect(screen, (255, 255, 0), notice_rect, 2)
+        # pygame.draw.rect(screen, (255, 0, 0), trap_rect, 2)
 
         if box_open:
             screen.blit(pygame.transform.scale(openbox2 if rednote else openbox1, box_rect.size), box_rect)
@@ -290,6 +306,9 @@ def run_data_layer(screen, inventory, physical_state, data_state,draw_hud=None):
             screen.blit(pygame.transform.scale(open_door, door_rect.size), door_rect)
 
         inventory.draw(screen,draw_hud)
+
+        if show_d_info:
+            screen.blit(d_info_img, (0, 0))
 
         # ---------- NOTE POPUP DRAW ----------
         if note_popup:

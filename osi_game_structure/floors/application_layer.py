@@ -101,7 +101,8 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
         "input_text": "",
         "broken_glass": False,
         "message": "",
-        "message_timer": 0
+        "message_timer": 0,
+        "a_info_shown": False
     }
     for key, value in default_state.items():
         if key not in application_state:
@@ -114,6 +115,8 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
     locker_open_img = pygame.image.load("assets/locker.png")
     siren_img = pygame.image.load("assets/siren.png")
     open_door_img = pygame.image.load("assets/openeddoor7.png")
+    a_info_img = pygame.image.load("assets/a_info.png")
+    a_info_img = pygame.transform.scale(a_info_img, (WIDTH, HEIGHT))
 
     note_img = pygame.image.load("assets/final_note.jpeg")
     watch_img = pygame.image.load("assets/watch.png")
@@ -133,6 +136,9 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
 
     flicker = False
     flicker_timer = 0
+
+    a_info_shown = application_state.get("a_info_shown", False)
+    show_a_info = False
 
     while True:
         dt = clock.tick(60)
@@ -180,6 +186,11 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
                             application_state["input_text"] += event.unicode
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if show_a_info:
+                    application_state["a_info_shown"] = a_info_shown
+                    run_underground(screen, inventory, application_state)
+                    return "game_over" if application_state.get("broken_glass") else "application"
+
                 # Handle overlays first
                 if application_state["entering_password"] or application_state["entering_siren_code"]:
                     if back_btn.collidepoint(event.pos):
@@ -205,7 +216,11 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
                     if not application_state["door_unlocked"]:
                         application_state["entering_password"] = True
                     else:
-                        run_underground(screen, inventory,application_state)
+                        if not a_info_shown:
+                            show_a_info = True
+                            a_info_shown = True
+                        else:
+                            run_underground(screen, inventory, application_state)
 
                 elif locker_rect.collidepoint(event.pos):
 
@@ -309,4 +324,8 @@ def run_application_layer(screen, inventory, application_state, draw_hud=None):
         if draw_hud:
             draw_hud(screen)
         inventory.draw(screen)
+
+        if show_a_info:
+            screen.blit(a_info_img, (0, 0))
+
         pygame.display.update()

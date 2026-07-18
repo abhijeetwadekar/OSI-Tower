@@ -43,6 +43,20 @@ def run_interface(game_screen, wire_fixed, network_state=None):
     font_normal = pygame.font.SysFont("Times New Roman", 20)
     font_small = pygame.font.SysFont("Times New Roman", 18)
     
+    # Camera image
+    try:
+        camera_img = pygame.image.load("assets/gadha.jpeg")
+        camera_img = pygame.transform.scale(camera_img, (400, 150))
+    except Exception:
+        try:
+            camera_img = pygame.image.load("assets/gadga.jpeg")
+            camera_img = pygame.transform.scale(camera_img, (400, 150))
+        except Exception:
+            camera_img = pygame.Surface((400, 150))
+            camera_img.fill((40, 40, 40))
+            missing_text = font_small.render("Camera image not found", True, TEXT_COLOR)
+            camera_img.blit(missing_text, missing_text.get_rect(center=camera_img.get_rect().center))
+    
     # Screen area - responsive to window size
     screen_rect = pygame.Rect(50, 40, WIDTH - 100, HEIGHT - 140)
     
@@ -248,8 +262,8 @@ def run_interface(game_screen, wire_fixed, network_state=None):
             title = font_large.render("Camera", True, TEXT_COLOR)
             screen.blit(title, (dialog_rect.x + 20, dialog_rect.y + 20))
             
-            camera_text = font_normal.render("[Camera Feed Placeholder]", True, TEXT_COLOR)
-            screen.blit(camera_text, camera_text.get_rect(center=(dialog_rect.centerx, dialog_rect.centery)))
+            image_rect = pygame.Rect(dialog_rect.x + 50, dialog_rect.y + 70, 400, 150)
+            screen.blit(camera_img, image_rect)
             
             close_camera_btn = pygame.Rect(dialog_rect.x + 200, dialog_rect.y + 180, 100, 40)
             pygame.draw.rect(screen, BUTTON_COLOR, close_camera_btn)

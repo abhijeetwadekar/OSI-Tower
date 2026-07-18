@@ -22,6 +22,8 @@ def run_presentation_layer(screen, inventory, presentation_state,draw_hud=None):
 
     book_img = pygame.image.load("assets/encryption_book.png")
     opened_door_img = pygame.image.load("assets/openeddoor6.jpeg")
+    p2_info_img = pygame.image.load("assets/p2_info.png")
+    p2_info_img = pygame.transform.scale(p2_info_img, (WIDTH, HEIGHT))
 
     # ---------- RECTS ----------
     drawer_rect = pygame.Rect(160, 407, 140, 80)
@@ -46,8 +48,12 @@ def run_presentation_layer(screen, inventory, presentation_state,draw_hud=None):
             "scroll_revealed": False,
             "pattern_solved": False,
             "viewing_scroll": False,
-            "viewing_book": False
+            "viewing_book": False,
+            "p2_info_shown": False
         })
+
+    p2_info_shown = presentation_state.get("p2_info_shown", False)
+    show_p2_info = False
 
     while True:
         screen.blit(bg, (0, 0))
@@ -58,6 +64,9 @@ def run_presentation_layer(screen, inventory, presentation_state,draw_hud=None):
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if show_p2_info:
+                    presentation_state["p2_info_shown"] = p2_info_shown
+                    return "application"
 
                 # ---------- HANDLE ZOOM STATES ----------
                 if presentation_state["viewing_scroll"]:
@@ -106,7 +115,11 @@ def run_presentation_layer(screen, inventory, presentation_state,draw_hud=None):
                 # ---------- EXIT DOOR ----------
                 elif exit_door_rect.collidepoint(event.pos):
                     if presentation_state["pattern_solved"]:
-                        return "application"
+                        if not p2_info_shown:
+                            show_p2_info = True
+                            p2_info_shown = True
+                        else:
+                            return "application"
                     else:
                         print("Door is locked")
 
@@ -187,6 +200,9 @@ def run_presentation_layer(screen, inventory, presentation_state,draw_hud=None):
             screen.blit(hint, (400, 50))
 
         inventory.draw(screen,draw_hud)
+
+        if show_p2_info:
+            screen.blit(p2_info_img, (0, 0))
 
         pygame.display.update()
         clock.tick(60)
