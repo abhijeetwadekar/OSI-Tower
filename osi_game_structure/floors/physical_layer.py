@@ -94,6 +94,9 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
     wired_hole = pygame.image.load("assets/wiredhole.png")
     wired_hole = pygame.transform.scale(wired_hole,(hatch_rect.width,hatch_rect.height))
 
+    p_info_img = pygame.image.load("assets/p_info.png")
+    p_info_img = pygame.transform.scale(p_info_img, (WIDTH, HEIGHT))
+
     hookless = pygame.image.load("assets/hookless.png")
     hookless = pygame.transform.scale(hookless,(wire_rect.width,wire_rect.height))
 
@@ -107,6 +110,7 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
             "door_open": False,
             "wire_collected": False,
             "wire_attached": False,
+            "hatch_info_shown": False,
         }
 
     # ---------- LOAD FROM STATE ----------
@@ -117,6 +121,7 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
     door_open = state.get("door_open", False)
     wire_collected = state.get("wire_collected", False)
     wire_attached = state.get("wire_attached", False)
+    hatch_info_shown = state.get("hatch_info_shown", False)
 
     font = pygame.font.SysFont("Times New Roman",26)
     title_font = pygame.font.SysFont("Times New Roman",48,bold=True)
@@ -130,6 +135,7 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
     message_timer = 0
     show_guide = False
     guide_scroll_offset = 0
+    show_hatch_info = False
 
     running = True
 
@@ -228,6 +234,9 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
         
         inventory.draw(screen,draw_hud)
 
+        if show_hatch_info:
+            screen.blit(p_info_img, (0, 0))
+
         pygame.display.update()
         clock.tick(60)
         
@@ -241,6 +250,15 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+
+                if show_hatch_info:
+                    state["switch_on"] = switch_on
+                    state["door_open"] = door_open
+                    state["wire_collected"] = wire_collected
+                    state["wire_attached"] = wire_attached
+                    state["hatch_info_shown"] = hatch_info_shown
+                    pygame.time.delay(100)
+                    return "data"
 
                 # Info button click
                 if info_button.collidepoint(event.pos) and not show_guide:
@@ -326,14 +344,19 @@ def run_physical_layer(screen, inventory, state,draw_hud=None):   # ✅ ADDED st
                                 message_timer = 120
 
                         elif wire_attached:
-                            # ✅ SAVE ONLY HERE (before leaving)
-                            state["switch_on"] = switch_on
-                            state["door_open"] = door_open
-                            state["wire_collected"] = wire_collected
-                            state["wire_attached"] = wire_attached
+                            if not hatch_info_shown:
+                                show_hatch_info = True
+                                hatch_info_shown = True
+                                state["hatch_info_shown"] = True
+                            else:
+                                # ✅ SAVE ONLY HERE (before leaving)
+                                state["switch_on"] = switch_on
+                                state["door_open"] = door_open
+                                state["wire_collected"] = wire_collected
+                                state["wire_attached"] = wire_attached
 
-                            pygame.time.delay(1000)
-                            return "data"
+                                pygame.time.delay(1000)
+                                return "data"
 
             # Guide scrolling with arrow keys
             if show_guide and event.type == pygame.KEYDOWN:

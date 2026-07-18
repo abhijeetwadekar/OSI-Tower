@@ -131,7 +131,7 @@ def run_laptop(screen, laptop_state):
             if event.type == pygame.KEYDOWN:
                 if current_app == "wifi":
                     if event.key == pygame.K_RETURN:
-                        if input_text == "I am Smart":
+                        if input_text.lower() == "i am smart":
                             laptop_state["wifi_connected"] = True
                             message = "WiFi Connected"
                         else:

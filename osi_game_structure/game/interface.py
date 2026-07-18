@@ -133,7 +133,15 @@ def run_interface(game_screen, wire_fixed, network_state=None):
                 pygame.draw.rect(screen, (50, 50, 50), input_rect)
                 pygame.draw.rect(screen, (100, 100, 100), input_rect, 1)
                 
-                    pwd_text = font_normal.render(wifi_password, True, TEXT_COLOR)
+                pwd_text = font_normal.render("*" * len(wifi_password), True, TEXT_COLOR)
+                screen.blit(pwd_text, (input_rect.x + 10, input_rect.y + 7))
+                
+                connect_btn = pygame.Rect(dialog_rect.x + 150, dialog_rect.y + 140, 100, 40)
+                pygame.draw.rect(screen, (0, 150, 0), connect_btn)
+                pygame.draw.rect(screen, TEXT_COLOR, connect_btn, 1)
+                connect_text = font_normal.render("Connect", True, TEXT_COLOR)
+                screen.blit(connect_text, connect_text.get_rect(center=connect_btn.center))
+                
                 cancel_btn = pygame.Rect(dialog_rect.x + 270, dialog_rect.y + 140, 100, 40)
                 pygame.draw.rect(screen, BUTTON_COLOR, cancel_btn)
                 pygame.draw.rect(screen, TEXT_COLOR, cancel_btn, 1)
@@ -296,7 +304,7 @@ def run_interface(game_screen, wire_fixed, network_state=None):
                     if wire_fixed:
                         connect_btn = pygame.Rect(dialog_rect.x + 150, dialog_rect.y + 140, 100, 40)
                         if connect_btn.collidepoint(event.pos):
-                            if wifi_password == "I am Smart":
+                            if wifi_password == "i am smart":
                                 wifi_connected = True
                                 running = False
                             else:
@@ -330,8 +338,8 @@ def run_interface(game_screen, wire_fixed, network_state=None):
                             command_output_colors.append((255, 255, 255))
                         elif cmd == "wlan_interfaces":
                             if wire_fixed:
-                                command_output.append("WiFi Name: modern_vip")
-                                command_output.append("Password: modern")
+                                command_output.append("WiFi Name: Smart WIFI")
+                                command_output.append("Password: i am smart")
                                 command_output_colors.extend([(255, 255, 255), (255, 255, 255)])
                             else:
                                 command_output.append("No WiFi adapters found")
@@ -373,8 +381,8 @@ def run_interface(game_screen, wire_fixed, network_state=None):
                             command_output_colors.append((255, 255, 255))
                         elif cmd == "wlan_interfaces":
                             if wire_fixed:
-                                command_output.append("WiFi Name: modern_vip")
-                                command_output.append("Password: modern")
+                                command_output.append("WiFi Name: Smart WIFI")
+                                command_output.append("Password: i am smart")
                                 command_output_colors.extend([(255, 255, 255), (255, 255, 255)])
                             else:
                                 command_output.append("No WiFi adapters found")
