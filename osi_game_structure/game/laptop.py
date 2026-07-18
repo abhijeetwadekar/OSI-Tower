@@ -131,7 +131,7 @@ def run_laptop(screen, laptop_state):
             if event.type == pygame.KEYDOWN:
                 if current_app == "wifi":
                     if event.key == pygame.K_RETURN:
-                        if input_text.lower() == "modern":
+                        if input_text == "I am Smart":
                             laptop_state["wifi_connected"] = True
                             message = "WiFi Connected"
                         else:
@@ -154,7 +154,7 @@ def run_laptop(screen, laptop_state):
             pygame.draw.rect(screen, RED, (100, 100, 700, 350), 3, border_radius=10)
             pygame.draw.rect(screen, RED, back_btn)
             screen.blit(big_font.render("BACK", True, WHITE), (30, 15))
-            screen.blit(big_font.render("Enter WiFi Password (modern_vip)", True, WHITE), (250, 180))
+            screen.blit(big_font.render("Enter WiFi Password (Smart WIFI)", True, WHITE), (250, 180))
             pygame.draw.rect(screen, WHITE, (300, 230, 300, 40), 2)
             screen.blit(big_font.render(input_text, True, WHITE), (310, 240))
             screen.blit(big_font.render(message, True, GREEN if laptop_state["wifi_connected"] else LIGHT_RED), (300, 290))

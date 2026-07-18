@@ -111,9 +111,9 @@ def run_wall(screen):
         pygame.draw.rect(screen, (255,0,0), popup_rect, 2)
 
         lines = [
-            "That was the developer's name!!",
-            "They are mad and will crash your game in 7 minutes!",
-            "Complete the game before time runs out!"
+            "That was the developer's name :( ",
+            "But everyone deserves a second chance...",
+            "You just need to restart and try again :)"
         ]
 
         for i, line in enumerate(lines):
@@ -161,16 +161,15 @@ def run_wall(screen):
                     ok_btn = draw_warning_popup()
 
                     if ok_btn.collidepoint(event.pos):
-                        warning_popup_active = False
-                        timer_active = True
-                        start_time = time.time()
+                        pygame.mouse.set_visible(True)
+                        return puzzle_solved, timer_active, "restart"
 
                     continue
 
                 # BACK BUTTON → EXIT POPUP
                 if back_btn.collidepoint(event.pos):
                     pygame.mouse.set_visible(True)
-                    return puzzle_solved,timer_active   # ✅ RETURN RESULT
+                    return puzzle_solved, timer_active, None   # ✅ RETURN RESULT
 
                 # NORMAL CLICK
                 if event.pos[1] < HEIGHT - TASKBAR_HEIGHT:

@@ -133,15 +133,7 @@ def run_interface(game_screen, wire_fixed, network_state=None):
                 pygame.draw.rect(screen, (50, 50, 50), input_rect)
                 pygame.draw.rect(screen, (100, 100, 100), input_rect, 1)
                 
-                pwd_text = font_normal.render("*" * len(wifi_password), True, TEXT_COLOR)
-                screen.blit(pwd_text, (input_rect.x + 10, input_rect.y + 7))
-                
-                connect_btn = pygame.Rect(dialog_rect.x + 150, dialog_rect.y + 140, 100, 40)
-                pygame.draw.rect(screen, (0, 150, 0), connect_btn)
-                pygame.draw.rect(screen, TEXT_COLOR, connect_btn, 1)
-                connect_text = font_normal.render("Connect", True, TEXT_COLOR)
-                screen.blit(connect_text, connect_text.get_rect(center=connect_btn.center))
-                
+                    pwd_text = font_normal.render(wifi_password, True, TEXT_COLOR)
                 cancel_btn = pygame.Rect(dialog_rect.x + 270, dialog_rect.y + 140, 100, 40)
                 pygame.draw.rect(screen, BUTTON_COLOR, cancel_btn)
                 pygame.draw.rect(screen, TEXT_COLOR, cancel_btn, 1)
@@ -304,7 +296,7 @@ def run_interface(game_screen, wire_fixed, network_state=None):
                     if wire_fixed:
                         connect_btn = pygame.Rect(dialog_rect.x + 150, dialog_rect.y + 140, 100, 40)
                         if connect_btn.collidepoint(event.pos):
-                            if wifi_password == "modern":
+                            if wifi_password == "I am Smart":
                                 wifi_connected = True
                                 running = False
                             else:

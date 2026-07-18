@@ -146,13 +146,20 @@ def run_session_layer(screen, inventory, session_state,draw_hud=None):
                 # 7. Destructible Wall (Hammer)
                 elif destructible_wall.collidepoint(event.pos):
                     if inventory.selected_item == "wall_hammer":
-                        result, start_timer = run_wall(screen)
+                        result, start_timer, return_scene = run_wall(screen)
+                        if return_scene == "restart":
+                            return "restart"
                         if result:
                             session_state["wall_solved"] = True
                             inventory.remove_item("wall_hammer")
                         if start_timer:
-                            session_state["timer_active"] = True
-                            session_state["timer_start"] = time.time()
+                            if not session_state.get("timer_active"):
+                                session_state["timer_active"] = True
+                                session_state["timer_start"] = time.time()
+                            else:
+                                session_state["timer_active"] = True
+                        if return_scene == "physical":
+                            return "physical"
 
                     else:
                         session_state["temp_hint"] = "need something to break"

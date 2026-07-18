@@ -135,7 +135,29 @@ game_state = {
     "application": {}
 }
 
-# ---------- TIMER STATE ----------        # ← ADD THIS BLOCK
+# ---------- RESET HELPERS ----------
+def reset_game_state(full_restart=False):
+    global game_state, inventory, player_name, game_start_time, score_saved, countdown_active, countdown_start
+
+    game_state = {
+        "physical": {},
+        "data_link": {},
+        "network": {},
+        "transport": {},
+        "session": {},
+        "presentation": {},
+        "application": {}
+    }
+    inventory = Inventory()
+    countdown_active = False
+    countdown_start = None
+
+    if full_restart:
+        score_saved = False
+        player_name = run_start_menu(screen)
+        game_start_time = time.time()
+
+# ---------- TIMER STATE ----------
 # starts after start menu
 countdown_active = False                   # wall puzzle triggered
 countdown_start = None
@@ -230,6 +252,10 @@ while running:
         if game_state["session"].get("timer_active") and not countdown_active:
             countdown_active = True
             countdown_start = game_state["session"]["timer_start"]
+
+        if current_scene == "restart":
+            reset_game_state(full_restart=True)
+            current_scene = "physical"
 
     elif current_scene == "presentation":
         current_scene = run_presentation_layer(screen, inventory, game_state["presentation"],draw_hud)
